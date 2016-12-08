@@ -33,7 +33,7 @@ namespace {
 // Anything worse than or equal to this will show 0 bars.
 const int kMinRSSI = -100;
 // Anything better than or equal to this will show the maximum bars.
-const int kMaxRSSI = -55;
+const int kMaxRSSI = -37;
 // Number of RSSI levels used in the signal strength image.
 const int kNumSignalStrengthLevels = 5;
 
@@ -436,21 +436,22 @@ int BluetoothDeviceChooserController::CalculateSignalStrengthLevel(
     int8_t rssi) {
   RecordRSSISignalStrength(rssi);
 
-  if (rssi <= kMinRSSI) {
+  double input_range = kMaxRSSI - kMinRSSI;
+  double output_range = kNumSignalStrengthLevels;
+  int level = static_cast<int>((rssi - kMinRSSI) * output_range / input_range);
+
+  if (level < 0) {
     RecordRSSISignalStrengthLevel(
         UMARSSISignalStrengthLevel::LESS_THAN_OR_EQUAL_TO_MIN_RSSI);
     return 0;
   }
 
-  if (rssi >= kMaxRSSI) {
+  if (level >= kNumSignalStrengthLevels) {
     RecordRSSISignalStrengthLevel(
         UMARSSISignalStrengthLevel::GREATER_THAN_OR_EQUAL_TO_MAX_RSSI);
     return kNumSignalStrengthLevels - 1;
   }
 
-  double input_range = kMaxRSSI - kMinRSSI;
-  double output_range = kNumSignalStrengthLevels - 1;
-  int level = static_cast<int>((rssi - kMinRSSI) * output_range / input_range);
   DCHECK(kNumSignalStrengthLevels == arraysize(kRSSISignalStrengthEnumTable));
   RecordRSSISignalStrengthLevel(kRSSISignalStrengthEnumTable[level]);
   return level;
