@@ -35,36 +35,61 @@ namespace {
 // names is not a goal. It is important that a user be able to move away from a
 // device and have it transition between two different signal strength levels.
 //
-// RSSI Min and Max values are determined from real world values collected via
-// UMA in RecordRSSISignalStrength. They are selected to span the range of
-// encountered values, and avoid too many devices saturating the strongest
-// signal level displayed.
+// RSSI thresholds used to convert to displayed levels are determined from real
+// world values collected via UMA in RecordRSSISignalStrength. They are selected
+// to span the range of encountered values, and avoid too many devices
+// saturating the strongest signal level displayed.
 //
 // Measured RSSI values from UMA are charted here:
 // https://goo.gl/photos/pCoAkF7mPyza9B1k7 (2016-12-08)
-// and summarized roughly as:
-//  dBm   CDF* Histogram Bucket Quantity (hand drawn)
-// -100  0.01% -
-//  -90  1.90% --
-//  -80  9.20% ---
-//  -70  22.0% ----
-//  -60  47.9% --------
-//  -50  72.8% --------
-//  -40  94.5% ---
-//  -30  99.0% -
+// and copy-paste of table summarized roughly as:
+//  dBm   CDF* Histogram Bucket Quantity (hand drawn estimate)
+// -100 00.0%  -
+//  -95 00.4%  --
+//  -90 01.9%  ---
+//  -85 05.1%  ---
+//  -80 09.2%  ----
+//  -75 14.9%  -----
+//  -70 22.0%  ------
+//  -65 32.4%  --------
+//  -60 47.9%  ---------
+//  -55 60.4%  --------
+//  -50 72.8%  ---------
+//  -45 85.5%  -------
+//  -40 94.5%  -----
+//  -35 97.4%  ---
+//  -30 99.0%  --
+//  -25 99.7%  -
 //
 // CDF: Cumulative Distribution Function:
 // https://en.wikipedia.org/wiki/Cumulative_distribution_function
 //
-// Number of RSSI levels used in the signal strength image. Conceptually
-// entangled with the k80thPercentileRSSI value.
+// Conversion to signal strengths is done by selecting 4 threshold points
+// equally spaced through the CDF. This results in roughly distributing
+// devices evenly between the displayed levels.
+//
+// To avoid saturating at the highest level, the highest level is made
+// to be 1/2 the size of all the others. This reduces the number of devices
+// expected in the strongest signal level, helping achieve the goal of
+// ensuring high power devices do not saturate the displayed signal and can be
+// tested by moving closer and farther away.
+//
+// [ level 0 ][ level 1 ][ level 2 ][ level 3 ][ l.4 ]
+// [    2    ][    2    ][    2    ][    2    ][  1  ]   Sizes of levels.
+// 0%        22%        44%        66%        88%   100% Percentages of devices.
+//
+// Number of RSSI levels used in the signal strength image.
 const int kNumSignalStrengthLevels = 5;
-// Anything worse than or equal to this will show 0 bars.
-const int kMinRSSI = -100;
-// The threshold 80% of RSSI values fall below. This is the lower threshold for
-// the highest displayed level when kNumSignalStrengthLevels == 5.
-const int k80thPercentileRSSI = -47;
+// RSSI thresholds corresponding to Cumulative Distribution of devices.
+const int k22thPercentileRSSI = -70;
+const int k44thPercentileRSSI = -61;
+const int k66thPercentileRSSI = -52;
+const int k88thPercentileRSSI = -44;
 
+// The threshold ~100% of RSSI values are expected to fall below. Larger values
+// are clamped to the maximum displayed level, but reported in UMA as having
+// fallen outside of range. This value is derived because there is no crisp
+// limit that defines
 const content::UMARSSISignalStrengthLevel kRSSISignalStrengthEnumTable[] = {
     content::UMARSSISignalStrengthLevel::LEVEL_0,
     content::UMARSSISignalStrengthLevel::LEVEL_1,
@@ -464,20 +489,17 @@ int BluetoothDeviceChooserController::CalculateSignalStrengthLevel(
     int8_t rssi) {
   RecordRSSISignalStrength(rssi);
 
-  double input_range = k80thPercentileRSSI - kMinRSSI;
-  int level = static_cast<int>((rssi - kMinRSSI) / input_range *
-                               (kNumSignalStrengthLevels - 1));
-
-  if (level < 0) {
-    RecordRSSISignalStrengthLevel(
-        UMARSSISignalStrengthLevel::LESS_THAN_OR_EQUAL_TO_MIN_RSSI);
-    return 0;
-  }
-
-  if (level >= kNumSignalStrengthLevels) {
-    RecordRSSISignalStrengthLevel(
-        UMARSSISignalStrengthLevel::GREATER_THAN_OR_EQUAL_TO_MAX_RSSI);
-    return kNumSignalStrengthLevels - 1;
+  int level;
+  if (rssi < k22thPercentileRSSI) {
+    level = 0;
+  } else if (rssi < k44thPercentileRSSI) {
+    level = 1;
+  } else if (rssi < k66thPercentileRSSI) {
+    level = 2;
+  } else if (rssi < k88thPercentileRSSI) {
+    level = 3;
+  } else
+    level = 4;
   }
 
   DCHECK(kNumSignalStrengthLevels == arraysize(kRSSISignalStrengthEnumTable));
