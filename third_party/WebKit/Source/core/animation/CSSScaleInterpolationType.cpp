@@ -56,7 +56,7 @@ struct Scale {
 class InheritedScaleChecker : public InterpolationType::ConversionChecker {
  public:
   static std::unique_ptr<InheritedScaleChecker> create(const Scale& scale) {
-    return wrapUnique(new InheritedScaleChecker(scale));
+    return WTF::wrapUnique(new InheritedScaleChecker(scale));
   }
 
  private:
@@ -132,7 +132,7 @@ InterpolationValue CSSScaleInterpolationType::maybeConvertInherit(
     const StyleResolverState& state,
     ConversionCheckers& conversionCheckers) const {
   Scale inheritedScale(state.parentStyle()->scale());
-  conversionCheckers.append(InheritedScaleChecker::create(inheritedScale));
+  conversionCheckers.push_back(InheritedScaleChecker::create(inheritedScale));
   return InterpolationValue(inheritedScale.createInterpolableValue());
 }
 

@@ -31,7 +31,7 @@
 #include "services/ui/ws/display.h"
 #include "services/ui/ws/display_binding.h"
 #include "services/ui/ws/display_manager.h"
-#include "services/ui/ws/gpu_service_proxy.h"
+#include "services/ui/ws/gpu_host.h"
 #include "services/ui/ws/user_activity_monitor.h"
 #include "services/ui/ws/user_display_manager.h"
 #include "services/ui/ws/window_server.h"
@@ -204,7 +204,7 @@ bool Service::OnConnect(const service_manager::ServiceInfo& remote_info,
   registry->AddInterface<mojom::AccessibilityManager>(this);
   registry->AddInterface<mojom::Clipboard>(this);
   registry->AddInterface<mojom::DisplayManager>(this);
-  registry->AddInterface<mojom::GpuService>(this);
+  registry->AddInterface<mojom::Gpu>(this);
   registry->AddInterface<mojom::IMERegistrar>(this);
   registry->AddInterface<mojom::IMEServer>(this);
   registry->AddInterface<mojom::UserAccessManager>(this);
@@ -297,8 +297,8 @@ void Service::Create(const service_manager::Identity& remote_identity,
 }
 
 void Service::Create(const service_manager::Identity& remote_identity,
-                     mojom::GpuServiceRequest request) {
-  window_server_->gpu_proxy()->Add(std::move(request));
+                     mojom::GpuRequest request) {
+  window_server_->gpu_host()->Add(std::move(request));
 }
 
 void Service::Create(const service_manager::Identity& remote_identity,

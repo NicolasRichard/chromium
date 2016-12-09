@@ -40,11 +40,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '64d8be00b85c398a757126ed9767ff57e646a1d5',
+  'skia_revision': '291c62a0ff2ca8a98cb30fcdaa6587f8a61bed98',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '4f8187a0b029f4eaaa03e4111eaac1f280de5b77',
+  'v8_revision': 'e050386b367ad90343a71edfcd4dcd1a59b138ce',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -52,7 +52,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'b5e997fbe7d9d4f337dbc738618e70e79dfe3726',
+  'angle_revision': 'dceacf5b124229447b50d578b78dd389b60f69a2',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling build tools
   # and whatever else without interference from each other.
@@ -60,11 +60,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
-  'swiftshader_revision': 'f4f68e16d1115f4413b38315680aa4d331391ed8',
+  'swiftshader_revision': '3ea9295f5b2f4a1dfa022d58dc53299e02fbbea1',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
-  'pdfium_revision': '64f4e25304dfd93651ac5c9d5379ed2fffbb993f',
+  'pdfium_revision': '6814f49aa83916aea14bea2a1e78dac455436713',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling openmax_dl
   # and whatever else without interference from each other.
@@ -72,7 +72,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling BoringSSL
   # and whatever else without interference from each other.
-  'boringssl_revision': 'f086df9f5f28cf9bbfc37055f1cc2f02a4f9e259',
+  'boringssl_revision': '33b1d4f575543b42b9c3406b7f8259daf11945dc',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling google-toolbox-for-mac
   # and whatever else without interference from each other.
@@ -96,11 +96,15 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': '3838eb5d96b721896766c557a3d7b514fa427b21',
+  'catapult_revision': 'df2363501bd70a2c99ac8a0307a1b864cedf7db6',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
   'libfuzzer_revision': '2ed967ccadb496a1e916d9bd33a41386900dfb6a',
+  # Three lines of non-changing comments so that
+  # the commit queue can handle CLs rolling devtools-node-modules
+  # and whatever else without interference from each other.
+  'devtools_node_modules_revision': '6226d6cd80aaf2e5295ed460cf73ef6a582e4d78',
 }
 
 # Only these hosts are allowed for dependencies in this DEPS file.
@@ -188,7 +192,7 @@ deps = {
     Var('chromium_git') + '/external/bidichecker/lib.git' + '@' + '97f2aa645b74c28c57eca56992235c79850fa9e0',
 
   'src/third_party/webgl/src':
-    Var('chromium_git') + '/external/khronosgroup/webgl.git' + '@' + 'f554de25329a3d63754a32ae023854b8c1ad094c',
+    Var('chromium_git') + '/external/khronosgroup/webgl.git' + '@' + 'a67124d6ddc7e44ef25af1e52a6fe2f1a869a8cc',
 
   'src/third_party/webdriver/pylib':
     Var('chromium_git') + '/external/selenium/py.git' + '@' + '5fd78261a75fe08d27ca4835fb6c5ce4b42275bd',
@@ -224,7 +228,7 @@ deps = {
     Var('chromium_git') + '/native_client/src/third_party/scons-2.0.1.git' + '@' + '1c1550e17fc26355d08627fbdec13d8291227067',
 
   'src/third_party/webrtc':
-    Var('chromium_git') + '/external/webrtc/trunk/webrtc.git' + '@' + '666ab2c1173e5411c3f81ebb0277644c978d136a', # commit position 15456
+    Var('chromium_git') + '/external/webrtc/trunk/webrtc.git' + '@' + 'f23e9262fa5dc35022d9af4acabad3690c728135', # commit position 15513
 
   'src/third_party/openmax_dl':
     Var('chromium_git') + '/external/webrtc/deps/third_party/openmax.git' + '@' +  Var('openmax_dl_revision'),
@@ -381,7 +385,7 @@ deps_os = {
 
     # For Linux and Chromium OS.
     'src/third_party/cros_system_api':
-      Var('chromium_git') + '/chromiumos/platform/system_api.git' + '@' + '04ffa5a6f8cc773df1d8cbd4cb136164a9163543',
+      Var('chromium_git') + '/chromiumos/platform/system_api.git' + '@' + '4489d28f1ec210c840d4f4827f8210ab27141f2d',
 
     # Note that this is different from Android's freetype repo.
     'src/third_party/freetype2/src':
@@ -411,7 +415,7 @@ deps_os = {
 
     # Display server protocol for Linux.
     'src/third_party/wayland/src':
-      Var('chromium_git') + '/external/anongit.freedesktop.org/git/wayland/wayland.git' + '@' + '47163797f810373c81b6e13b7a8a245eb9877785',
+      Var('chromium_git') + '/external/anongit.freedesktop.org/git/wayland/wayland.git' + '@' + '6a18a87727c64719c68168568b9ab1e4d7c2d9c1',
 
     # Wayland protocols that add functionality not available in the core protocol.
     'src/third_party/wayland-protocols/src':
@@ -423,7 +427,11 @@ deps_os = {
 
     # gRPC, an RPC framework. For Blimp use only.
     'src/third_party/grpc':
-      Var('chromium_git') + '/external/github.com/grpc/grpc' + '@' + 'b4cc5fc16c1368149c8a20c51248a18009ff8254',
+      Var('chromium_git') + '/external/github.com/grpc/grpc' + '@' + '5945dfa700a0566be7ea6691cc8a86ecb4a53924',
+
+    # DevTools node modules. Used on Linux buildbots only.
+    'src/third_party/WebKit/Source/devtools/devtools-node-modules':
+      Var('chromium_git') + '/external/github.com/ChromeDevTools/devtools-node-modules' + '@' + Var('devtools_node_modules_revision')
   },
   'android': {
     'src/third_party/android_protobuf/src':
@@ -1059,6 +1067,14 @@ hooks = [
     'pattern': '.',
     'action': [ 'python',
                 'src/tools/clang_format_merge_driver/install_git_hook.py',
+    ],
+  },
+  {
+    'name': 'devtools_install_node',
+    'action': [ 'python',
+                'src/third_party/WebKit/Source/devtools/scripts/local_node/node.py',
+                '--running-as-hook',
+                '--version',
     ],
   },
 ]

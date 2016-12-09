@@ -99,7 +99,7 @@
 #include "content/browser/renderer_host/clipboard_message_filter.h"
 #include "content/browser/renderer_host/database_message_filter.h"
 #include "content/browser/renderer_host/file_utilities_message_filter.h"
-#include "content/browser/renderer_host/gamepad_browser_message_filter.h"
+#include "content/browser/renderer_host/gamepad_monitor.h"
 #include "content/browser/renderer_host/media/audio_input_renderer_host.h"
 #include "content/browser/renderer_host/media/audio_renderer_host.h"
 #include "content/browser/renderer_host/media/media_stream_dispatcher_host.h"
@@ -190,7 +190,6 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/display/display_switches.h"
-#include "ui/events/event_switches.h"
 #include "ui/gfx/switches.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/gl/gpu_switching_manager.h"
@@ -1172,7 +1171,6 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       resource_context, service_worker_context, browser_context);
   AddFilter(notification_message_filter_.get());
 
-  AddFilter(new GamepadBrowserMessageFilter());
   AddFilter(new ProfilerMessageFilter(PROCESS_TYPE_RENDERER));
   AddFilter(new HistogramMessageFilter());
   AddFilter(new MemoryMessageFilter(this));
@@ -1285,6 +1283,8 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
   registry->AddInterface(base::Bind(&DeviceOrientationHost::Create));
   registry->AddInterface(base::Bind(&DeviceOrientationAbsoluteHost::Create));
 #endif  // defined(OS_ANDROID)
+
+  registry->AddInterface(base::Bind(&GamepadMonitor::Create));
 
   registry->AddInterface(
       base::Bind(&VideoCaptureHost::Create,
@@ -1753,7 +1753,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kStatsCollectionController,
     switches::kTestType,
     switches::kTopDocumentIsolation,
-    switches::kTouchEvents,
+    switches::kTouchEventFeatureDetection,
     switches::kTouchTextSelectionStrategy,
     switches::kTraceConfigFile,
     switches::kTraceToConsole,

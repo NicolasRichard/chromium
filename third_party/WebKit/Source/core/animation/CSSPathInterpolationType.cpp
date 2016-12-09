@@ -55,7 +55,7 @@ class InheritedPathChecker : public InterpolationType::ConversionChecker {
  public:
   static std::unique_ptr<InheritedPathChecker> create(
       PassRefPtr<StylePath> stylePath) {
-    return wrapUnique(new InheritedPathChecker(std::move(stylePath)));
+    return WTF::wrapUnique(new InheritedPathChecker(std::move(stylePath)));
   }
 
  private:
@@ -78,7 +78,7 @@ InterpolationValue CSSPathInterpolationType::maybeConvertInherit(
   if (!state.parentStyle())
     return nullptr;
 
-  conversionCheckers.append(
+  conversionCheckers.push_back(
       InheritedPathChecker::create(state.parentStyle()->svgStyle().d()));
   return PathInterpolationFunctions::convertValue(
       state.parentStyle()->svgStyle().d());

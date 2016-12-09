@@ -91,39 +91,15 @@ crbug.com/626748 paint/invalidation/table/cached-change-tbody-border-color.html 
 crbug.com/626748 virtual/spinvalidation/paint/invalidation/table/cached-change-row-border-color.html [ Skip ]
 crbug.com/626748 virtual/spinvalidation/paint/invalidation/table/cached-change-tbody-border-color.html [ Skip ]
 
-crbug.com/645667 virtual/spinvalidation/paint/invalidation/filters/effect-reference-repaint-morphology.html [ Skip ]
-crbug.com/645667 virtual/spinvalidation/paint/invalidation/filters/effect-reference-repaint-gaussianblur.html [ Skip ]
-crbug.com/645667 virtual/spinvalidation/paint/invalidation/filters/effect-reference-repaint-composite-2.html [ Skip ]
-crbug.com/645667 virtual/spinvalidation/paint/invalidation/filters/effect-reference-repaint-morphology-yonly.html [ Skip ]
-crbug.com/645667 virtual/spinvalidation/paint/invalidation/filters/effect-reference-repaint-gaussianblur-yonly.html [ Skip ]
-crbug.com/645667 virtual/spinvalidation/paint/invalidation/filters/effect-reference-repaint-composite-6.html [ Skip ]
-crbug.com/645667 virtual/spinvalidation/paint/invalidation/filters/effect-reference-repaint-morphology-xonly.html [ Skip ]
-crbug.com/645667 virtual/spinvalidation/paint/invalidation/filters/effect-reference-repaint-displacement.html [ Skip ]
-crbug.com/645667 virtual/spinvalidation/paint/invalidation/filters/effect-reference-repaint-lighting.html [ Skip ]
-crbug.com/645667 virtual/spinvalidation/paint/invalidation/filters/effect-reference-repaint-offset.html [ Skip ]
-crbug.com/645667 virtual/spinvalidation/paint/invalidation/filters/effect-reference-repaint-composite-1.html [ Skip ]
-crbug.com/645667 virtual/spinvalidation/paint/invalidation/filters/effect-reference-repaint-composite-4.html [ Skip ]
-crbug.com/645667 virtual/spinvalidation/paint/invalidation/filters/effect-reference-repaint-composite-3.html [ Skip ]
-crbug.com/645667 virtual/spinvalidation/paint/invalidation/filters/effect-reference-repaint-gaussianblur-xonly.html [ Skip ]
-crbug.com/645667 virtual/spinvalidation/paint/invalidation/filters/effect-reference-repaint-composite-5.html [ Skip ]
-crbug.com/645667 virtual/spinvalidation/paint/invalidation/outline-clip-change.html [ Skip ]
-crbug.com/645667 virtual/spinvalidation/paint/invalidation/filters/effect-reference-repaint-merge.html [ Skip ]
-crbug.com/645667 virtual/spinvalidation/paint/invalidation/filter-repaint-accelerated-on-accelerated-filter.html [ Skip ]
-crbug.com/645667 virtual/spinvalidation/paint/invalidation/position-change-keeping-geometry.html [ Skip ]
-crbug.com/645667 virtual/spinvalidation/paint/invalidation/svg/inner-svg-change-viewBox.svg [ Skip ]
-crbug.com/645667 virtual/spinvalidation/paint/invalidation/svg/relative-sized-inner-svg.xhtml [ Skip ]
-crbug.com/645667 virtual/spinvalidation/paint/invalidation/svg/marker-viewBox-changes.svg [ Skip ]
-crbug.com/645667 virtual/spinvalidation/paint/invalidation/svg/container-repaint.svg [ Skip ]
-crbug.com/645667 virtual/spinvalidation/paint/invalidation/svg/text-viewbox-rescale.html [ Skip ]
-crbug.com/645667 virtual/spinvalidation/paint/invalidation/svg/inner-svg-change-viewBox-contract.svg [ Skip ]
-crbug.com/645667 virtual/spinvalidation/paint/invalidation/svg/relative-sized-use-on-symbol.xhtml [ Skip ]
-crbug.com/645667 virtual/spinvalidation/paint/invalidation/svg/relative-sized-shadow-tree-content-with-symbol.xhtml [ Skip ]
-crbug.com/645667 virtual/spinvalidation/paint/invalidation/svg/relative-sized-use-without-attributes-on-symbol.xhtml [ Skip ]
-crbug.com/645667 virtual/spinvalidation/paint/invalidation/compositing/should-not-repaint-composited-descendants.html [ Skip ]
-crbug.com/645667 virtual/spinvalidation/paint/invalidation/compositing/resize-repaint.html [ Skip ]
-crbug.com/645667 virtual/spinvalidation/paint/invalidation/compositing/shrink-layer.html [ Skip ]
-crbug.com/645667 virtual/spinvalidation/paint/invalidation/compositing/clipping-should-not-repaint-composited-descendants.html [ Skip ]
-crbug.com/645667 virtual/spinvalidation/paint/invalidation/filter-repaint-on-accelerated-layer.html [ Skip ]
+crbug.com/645667 virtual/spinvalidation/paint/invalidation/outline-clip-change.html [ Crash Failure ]
+crbug.com/645667 virtual/spinvalidation/paint/invalidation/filter-repaint-accelerated-on-accelerated-filter.html [ Crash ]
+crbug.com/645667 virtual/spinvalidation/paint/invalidation/position-change-keeping-geometry.html [ Crash ]
+crbug.com/645667 virtual/spinvalidation/paint/invalidation/svg/marker-viewBox-changes.svg [ Crash Failure ]
+crbug.com/645667 virtual/spinvalidation/paint/invalidation/compositing/should-not-repaint-composited-descendants.html [ Crash ]
+crbug.com/645667 virtual/spinvalidation/paint/invalidation/compositing/resize-repaint.html [ Crash ]
+crbug.com/645667 virtual/spinvalidation/paint/invalidation/compositing/shrink-layer.html [ Crash ]
+crbug.com/645667 virtual/spinvalidation/paint/invalidation/compositing/clipping-should-not-repaint-composited-descendants.html [ Crash ]
+crbug.com/645667 virtual/spinvalidation/paint/invalidation/filter-repaint-on-accelerated-layer.html [ Crash ]
 
 # Very slight rendering changes caused by Skia rect clipping change.
 crbug.com/627844 virtual/gpu/fast/canvas/canvas-createImageBitmap-colorClamping.html [ Pass Failure ]
@@ -151,12 +127,6 @@ crbug.com/646015 paint/invalidation/hover-invalidation-table.html [ Failure ]
 crbug.com/646015 virtual/spinvalidation/paint/invalidation/hover-invalidation-table.html [ Skip ]
 crbug.com/646016 paint/invalidation/selected-replaced.html [ Failure ]
 crbug.com/646016 virtual/spinvalidation/paint/invalidation/selected-replaced.html [ Skip ]
-
-crbug.com/671097 virtual/spinvalidation/paint/invalidation/filter-on-html-element-with-fixed-position-child.html [ Crash ]
-crbug.com/671097 virtual/spinvalidation/paint/invalidation/reflection-redraw.html [ Crash ]
-crbug.com/671097 virtual/spinvalidation/paint/invalidation/scroll-fixed-reflected-layer.html [ Crash ]
-crbug.com/671097 virtual/spinvalidation/paint/invalidation/compositing/opacity-between-absolute.html [ Pass Crash ]
-crbug.com/671097 virtual/spinvalidation/paint/invalidation/compositing/opacity-between-absolute2.html [ Pass Crash ]
 
 # ====== Paint team owned tests to here ======
 
@@ -805,11 +775,6 @@ crbug.com/498539 virtual/threaded/inspector/tracing/timeline-misc/timeline-bound
 crbug.com/498539 [ Mac ] inspector/sources/debugger/live-edit-no-reveal.html [ Crash Pass Timeout ]
 crbug.com/498539 [ Win7 ] inspector/sources/debugger-pause/debugger-eval-on-call-frame-inside-iframe.html [ Failure Pass ]
 crbug.com/498539 [ Mac10.9 ] inspector/console/console-uncaught-exception.html [ Failure Pass ]
-
-crbug.com/666882 inspector/console/console-log-object-with-getter.html [ NeedsManualRebaseline ]
-crbug.com/645053 inspector/console/console-format-collections.html [ NeedsManualRebaseline ]
-crbug.com/645053 inspector/console/console-format.html [ NeedsManualRebaseline ]
-crbug.com/645053 inspector/console/console-tainted-globals.html [ NeedsManualRebaseline ]
 
 crbug.com/498539 [ Win7 ] inspector/console/console-dir-es6.html [ Failure Pass ]
 crbug.com/498539 [ Win7 ] inspector/elements/styles-4/styles-update-from-js.html [ Crash Pass ]
@@ -1818,8 +1783,8 @@ crbug.com/662264 imported/wpt/html/browsers/sandboxing/sandbox-disallow-same-ori
 
 crbug.com/645640 inspector/extensions/extensions-eval.html [ NeedsManualRebaseline ]
 
-crbug.com/652187 [ Win7 Debug ] http/tests/inspector/network/network-disable-cache-preloads.php [ Failure ]
-crbug.com/652187 [ Win7 Debug ] virtual/mojo-loading/http/tests/inspector/network/network-disable-cache-preloads.php [ Failure ]
+crbug.com/652187 [ Debug ] http/tests/inspector/network/network-disable-cache-preloads.php [ Failure ]
+crbug.com/652187 [ Debug ] virtual/mojo-loading/http/tests/inspector/network/network-disable-cache-preloads.php [ Failure ]
 
 crbug.com/655458 imported/wpt/workers/constructors/SharedWorker/undefined-arguments.html [ Failure ]
 crbug.com/655458 imported/wpt/workers/baseurl/alpha/worker.html [ Failure ]
@@ -1899,6 +1864,8 @@ crbug.com/659917 virtual/mojo-loading/http/tests/xmlhttprequest/workers/shared-w
 crbug.com/669357 virtual/mojo-loading/http/tests/inspector/network/network-fetch.html [ Failure ]
 crbug.com/669357 virtual/mojo-loading/http/tests/inspector-protocol/network-data-length.html [ Failure ]
 crbug.com/669357 virtual/mojo-loading/http/tests/inspector/network/network-datareceived.html [ Failure ]
+crbug.com/669357 virtual/mojo-loading/http/tests/inspector/tracing/timeline-receive-response-event.html [ Failure ]
+crbug.com/669357 virtual/mojo-loading/http/tests/inspector/tracing/timeline-network-received-data.html [ Failure ]
 crbug.com/669357 virtual/mojo-loading/http/tests/local/formdata/upload-events.html [ Failure ]
 
 # TODO(yhirano): There is an entry for the base test, but this test is flakier

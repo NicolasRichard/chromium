@@ -133,7 +133,7 @@ class InheritedTransformChecker : public InterpolationType::ConversionChecker {
  public:
   static std::unique_ptr<InheritedTransformChecker> create(
       const TransformOperations& inheritedTransform) {
-    return wrapUnique(new InheritedTransformChecker(inheritedTransform));
+    return WTF::wrapUnique(new InheritedTransformChecker(inheritedTransform));
   }
 
   bool isValid(const InterpolationEnvironment& environment,
@@ -168,7 +168,7 @@ InterpolationValue CSSTransformInterpolationType::maybeConvertInherit(
     ConversionCheckers& conversionCheckers) const {
   const TransformOperations& inheritedTransform =
       state.parentStyle()->transform();
-  conversionCheckers.append(
+  conversionCheckers.push_back(
       InheritedTransformChecker::create(inheritedTransform));
   return convertTransform(inheritedTransform);
 }
@@ -198,7 +198,7 @@ InterpolationValue CSSTransformInterpolationType::maybeConvertValue(
         LengthUnitsChecker::maybeCreate(std::move(lengthArray), state);
 
     if (lengthUnitsChecker)
-      conversionCheckers.append(std::move(lengthUnitsChecker));
+      conversionCheckers.push_back(std::move(lengthUnitsChecker));
   }
 
   TransformOperations transform = TransformBuilder::createTransformOperations(

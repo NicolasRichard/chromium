@@ -74,7 +74,7 @@ class UnderlyingIndentModeChecker
  public:
   static std::unique_ptr<UnderlyingIndentModeChecker> create(
       const IndentMode& mode) {
-    return wrapUnique(new UnderlyingIndentModeChecker(mode));
+    return WTF::wrapUnique(new UnderlyingIndentModeChecker(mode));
   }
 
   bool isValid(const InterpolationEnvironment&,
@@ -94,7 +94,7 @@ class InheritedIndentModeChecker : public InterpolationType::ConversionChecker {
  public:
   static std::unique_ptr<InheritedIndentModeChecker> create(
       const IndentMode& mode) {
-    return wrapUnique(new InheritedIndentModeChecker(mode));
+    return WTF::wrapUnique(new InheritedIndentModeChecker(mode));
   }
 
   bool isValid(const InterpolationEnvironment& environment,
@@ -128,7 +128,7 @@ InterpolationValue CSSTextIndentInterpolationType::maybeConvertNeutral(
   IndentMode mode =
       toCSSTextIndentNonInterpolableValue(*underlying.nonInterpolableValue)
           .mode();
-  conversionCheckers.append(UnderlyingIndentModeChecker::create(mode));
+  conversionCheckers.push_back(UnderlyingIndentModeChecker::create(mode));
   return createValue(Length(0, Fixed), mode, 1);
 }
 
@@ -145,7 +145,7 @@ InterpolationValue CSSTextIndentInterpolationType::maybeConvertInherit(
     ConversionCheckers& conversionCheckers) const {
   const ComputedStyle& parentStyle = *state.parentStyle();
   IndentMode mode(parentStyle);
-  conversionCheckers.append(InheritedIndentModeChecker::create(mode));
+  conversionCheckers.push_back(InheritedIndentModeChecker::create(mode));
   return createValue(parentStyle.textIndent(), mode,
                      parentStyle.effectiveZoom());
 }

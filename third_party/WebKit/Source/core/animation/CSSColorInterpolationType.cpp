@@ -157,7 +157,7 @@ class InheritedColorChecker : public InterpolationType::ConversionChecker {
   static std::unique_ptr<InheritedColorChecker> create(
       CSSPropertyID property,
       const StyleColor& color) {
-    return wrapUnique(new InheritedColorChecker(property, color));
+    return WTF::wrapUnique(new InheritedColorChecker(property, color));
   }
 
  private:
@@ -198,7 +198,7 @@ InterpolationValue CSSColorInterpolationType::maybeConvertInherit(
   // only use the unvisited color.
   const StyleColor inheritedColor = ColorPropertyFunctions::getUnvisitedColor(
       cssProperty(), *state.parentStyle());
-  conversionCheckers.append(
+  conversionCheckers.push_back(
       InheritedColorChecker::create(cssProperty(), inheritedColor));
   return convertStyleColorPair(inheritedColor, inheritedColor);
 }

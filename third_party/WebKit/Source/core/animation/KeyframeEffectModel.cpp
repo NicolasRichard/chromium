@@ -137,7 +137,7 @@ KeyframeEffectModelBase::normalizedKeyframes(const KeyframeVector& keyframes) {
       DCHECK_GE(offset, lastOffset);
       lastOffset = offset;
     }
-    result.append(keyframe->clone());
+    result.push_back(keyframe->clone());
   }
 
   if (result.isEmpty())
@@ -176,7 +176,7 @@ void KeyframeEffectModelBase::ensureKeyframeGroups() const {
   if (m_keyframeGroups)
     return;
 
-  m_keyframeGroups = wrapUnique(new KeyframeGroupMap);
+  m_keyframeGroups = WTF::wrapUnique(new KeyframeGroupMap);
   RefPtr<TimingFunction> zeroOffsetEasing = m_defaultKeyframeEasing;
   for (const auto& keyframe : normalizedKeyframes(getFrames())) {
     if (keyframe->offset() == 0)
@@ -185,13 +185,14 @@ void KeyframeEffectModelBase::ensureKeyframeGroups() const {
     for (const PropertyHandle& property : keyframe->properties()) {
       KeyframeGroupMap::iterator groupIter = m_keyframeGroups->find(property);
       PropertySpecificKeyframeGroup* group;
-      if (groupIter == m_keyframeGroups->end())
-        group =
-            m_keyframeGroups
-                ->add(property, wrapUnique(new PropertySpecificKeyframeGroup))
-                .storedValue->value.get();
-      else
+      if (groupIter == m_keyframeGroups->end()) {
+        group = m_keyframeGroups
+                    ->add(property,
+                          WTF::wrapUnique(new PropertySpecificKeyframeGroup))
+                    .storedValue->value.get();
+      } else {
         group = groupIter->value.get();
+      }
 
       group->appendKeyframe(keyframe->createPropertySpecificKeyframe(property));
     }
@@ -273,7 +274,7 @@ void KeyframeEffectModelBase::PropertySpecificKeyframeGroup::appendKeyframe(
     PassRefPtr<Keyframe::PropertySpecificKeyframe> keyframe) {
   DCHECK(m_keyframes.isEmpty() ||
          m_keyframes.back()->offset() <= keyframe->offset());
-  m_keyframes.append(keyframe);
+  m_keyframes.push_back(keyframe);
 }
 
 void KeyframeEffectModelBase::PropertySpecificKeyframeGroup::

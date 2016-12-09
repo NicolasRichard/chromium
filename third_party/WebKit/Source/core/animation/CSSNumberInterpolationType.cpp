@@ -16,7 +16,7 @@ class InheritedNumberChecker : public InterpolationType::ConversionChecker {
  public:
   static std::unique_ptr<InheritedNumberChecker> create(CSSPropertyID property,
                                                         double number) {
-    return wrapUnique(new InheritedNumberChecker(property, number));
+    return WTF::wrapUnique(new InheritedNumberChecker(property, number));
   }
 
  private:
@@ -65,7 +65,7 @@ InterpolationValue CSSNumberInterpolationType::maybeConvertInherit(
   if (!NumberPropertyFunctions::getNumber(cssProperty(), *state.parentStyle(),
                                           inheritedNumber))
     return nullptr;
-  conversionCheckers.append(
+  conversionCheckers.push_back(
       InheritedNumberChecker::create(cssProperty(), inheritedNumber));
   return createNumberValue(inheritedNumber);
 }

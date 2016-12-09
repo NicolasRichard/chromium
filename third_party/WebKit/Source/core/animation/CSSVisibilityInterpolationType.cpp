@@ -56,7 +56,7 @@ class UnderlyingVisibilityChecker
 
   static std::unique_ptr<UnderlyingVisibilityChecker> create(
       EVisibility visibility) {
-    return wrapUnique(new UnderlyingVisibilityChecker(visibility));
+    return WTF::wrapUnique(new UnderlyingVisibilityChecker(visibility));
   }
 
  private:
@@ -80,7 +80,7 @@ class InheritedVisibilityChecker : public InterpolationType::ConversionChecker {
  public:
   static std::unique_ptr<InheritedVisibilityChecker> create(
       EVisibility visibility) {
-    return wrapUnique(new InheritedVisibilityChecker(visibility));
+    return WTF::wrapUnique(new InheritedVisibilityChecker(visibility));
   }
 
  private:
@@ -110,7 +110,7 @@ InterpolationValue CSSVisibilityInterpolationType::maybeConvertNeutral(
   EVisibility underlyingVisibility =
       toCSSVisibilityNonInterpolableValue(*underlying.nonInterpolableValue)
           .visibility(underlyingFraction);
-  conversionCheckers.append(
+  conversionCheckers.push_back(
       UnderlyingVisibilityChecker::create(underlyingVisibility));
   return createVisibilityValue(underlyingVisibility);
 }
@@ -127,7 +127,7 @@ InterpolationValue CSSVisibilityInterpolationType::maybeConvertInherit(
   if (!state.parentStyle())
     return nullptr;
   EVisibility inheritedVisibility = state.parentStyle()->visibility();
-  conversionCheckers.append(
+  conversionCheckers.push_back(
       InheritedVisibilityChecker::create(inheritedVisibility));
   return createVisibilityValue(inheritedVisibility);
 }

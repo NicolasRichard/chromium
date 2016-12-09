@@ -85,6 +85,8 @@ WindowManager::WindowManager(service_manager::Connector* connector)
       screen_position_controller_(
           base::MakeUnique<ScreenPositionController>()) {
   property_converter_->RegisterProperty(
+      kPanelAttachedKey, ui::mojom::WindowManager::kPanelAttached_Property);
+  property_converter_->RegisterProperty(
       kRenderTitleAreaProperty,
       ui::mojom::WindowManager::kRenderParentTitleArea_Property);
   property_converter_->RegisterProperty(
@@ -215,6 +217,7 @@ display::mojom::DisplayController* WindowManager::GetDisplayController() {
 RootWindowController* WindowManager::CreateRootWindowController(
     std::unique_ptr<aura::WindowTreeHostMus> window_tree_host,
     const display::Display& display) {
+  window_tree_host->InitCompositor();
   // TODO(sky): this is temporary, should use RootWindowController directly.
   aura::client::SetCaptureClient(window_tree_host->window(),
                                  wm_state_->capture_controller());

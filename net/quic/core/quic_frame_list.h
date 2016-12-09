@@ -2,17 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_QUIC_QUIC_FRAME_LIST_H_
-#define NET_QUIC_QUIC_FRAME_LIST_H_
+#ifndef NET_QUIC_CORE_QUIC_FRAME_LIST_H_
+#define NET_QUIC_CORE_QUIC_FRAME_LIST_H_
 
 #include <stddef.h>
+
 #include <list>
 #include <string>
 
 #include "base/strings/string_piece.h"
-#include "net/base/net_export.h"
 #include "net/quic/core/quic_packets.h"
 #include "net/quic/core/quic_stream_sequencer_buffer_interface.h"
+#include "net/quic/platform/api/quic_export.h"
 
 namespace net {
 
@@ -20,7 +21,7 @@ namespace test {
 class QuicStreamSequencerPeer;
 }
 
-class NET_EXPORT_PRIVATE QuicFrameList
+class QUIC_EXPORT_PRIVATE QuicFrameList
     : public QuicStreamSequencerBufferInterface {
  public:
   // A contiguous segment received by a QUIC stream.
@@ -79,4 +80,4 @@ class NET_EXPORT_PRIVATE QuicFrameList
 
 }  // namespace net
 
-#endif  // NET_QUIC_QUIC_FRAME_LIST_H_
+#endif  // NET_QUIC_CORE_QUIC_FRAME_LIST_H_

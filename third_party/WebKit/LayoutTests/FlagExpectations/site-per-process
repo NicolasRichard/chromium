@@ -1,6 +1,9 @@
 # These tests currently fail when they run with --site-per-process.
 # See https://crbug.com/477150.
 
+# https://crbug.com/672546: fullscreen-enabledforself.php test doesn't work with OOPIFs
+crbug.com/672546 virtual/feature-policy/http/tests/feature-policy/fullscreen-enabledforself.php [ Failure ]
+
 # https://crbug.com/670105: uninvestigated test timeout caused by r435352.
 crbug.com/670105 http/tests/security/opened-document-security-origin-resets-on-navigation.html [ Timeout ]
 crbug.com/670105 virtual/mojo-loading/http/tests/security/opened-document-security-origin-resets-on-navigation.html [ Timeout ]
@@ -176,6 +179,9 @@ crbug.com/670409 virtual/mojo-loading/http/tests/inspector/network/network-datar
 crbug.com/670409 virtual/mojo-loading/http/tests/perf/large-inlined-script.html [ Timeout ]
 crbug.com/670409 virtual/mojo-loading/http/tests/security/contentSecurityPolicy/require-sri-for/require-sri-for-script-preload-allowed.php [ Failure ]
 crbug.com/670409 virtual/mojo-loading/http/tests/security/webgl-remote-read-remote-image-allowed-with-credentials.html [ Timeout ]
+
+# https://crbug.com/672570: autoplay-crossorigin.html fails w/ --site-per-process
+crbug.com/672570 http/tests/media/autoplay-crossorigin.html [ Timeout ]
 
 # TODO(lukasza, alexmos): Triage these failures.
 Bug(none) fast/frames/cached-frame-counter.html [ Timeout ]

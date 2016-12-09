@@ -32,7 +32,7 @@ class InheritedLengthChecker : public InterpolationType::ConversionChecker {
  public:
   static std::unique_ptr<InheritedLengthChecker> create(CSSPropertyID property,
                                                         const Length& length) {
-    return wrapUnique(new InheritedLengthChecker(property, length));
+    return WTF::wrapUnique(new InheritedLengthChecker(property, length));
   }
 
  private:
@@ -77,7 +77,7 @@ InterpolationValue CSSLengthInterpolationType::maybeConvertInherit(
   if (!LengthPropertyFunctions::getLength(cssProperty(), *state.parentStyle(),
                                           inheritedLength))
     return nullptr;
-  conversionCheckers.append(
+  conversionCheckers.push_back(
       InheritedLengthChecker::create(cssProperty(), inheritedLength));
   return LengthInterpolationFunctions::maybeConvertLength(
       inheritedLength, effectiveZoom(*state.parentStyle()));

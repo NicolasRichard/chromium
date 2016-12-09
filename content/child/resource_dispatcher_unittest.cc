@@ -92,12 +92,17 @@ class TestRequestPeer : public RequestPeer {
     EXPECT_TRUE(context_->received_response);
     EXPECT_FALSE(context_->complete);
     context_->data.append(data->payload(), data->length());
-    context_->total_encoded_data_length += data->encoded_data_length();
 
     if (context_->cancel_on_receive_data) {
       dispatcher_->Cancel(context_->request_id);
       context_->cancelled = true;
     }
+  }
+
+  void OnTransferSizeUpdated(int transfer_size_diff) override {
+    if (context_->cancelled)
+      return;
+    context_->total_encoded_data_length += transfer_size_diff;
   }
 
   void OnCompletedRequest(int error_code,
@@ -330,7 +335,7 @@ class ResourceDispatcherTest : public testing::Test, public IPC::Sender {
     std::unique_ptr<TestRequestPeer> peer(
         new TestRequestPeer(dispatcher(), peer_context));
     int request_id = dispatcher()->StartAsync(
-        std::move(request), 0, nullptr, GURL(), std::move(peer),
+        std::move(request), 0, nullptr, url::Origin(), std::move(peer),
         blink::WebURLRequest::LoadingIPCType::ChromeIPC, nullptr, nullptr);
     peer_context->request_id = request_id;
     return request_id;
@@ -540,6 +545,7 @@ class TestResourceDispatcherDelegate : public ResourceDispatcherDelegate {
     void OnReceivedData(std::unique_ptr<ReceivedData> data) override {
       data_.append(data->payload(), data->length());
     }
+    void OnTransferSizeUpdated(int transfer_size_diff) override {}
 
     void OnCompletedRequest(int error_code,
                             bool was_ignored_by_handler,
@@ -549,8 +555,8 @@ class TestResourceDispatcherDelegate : public ResourceDispatcherDelegate {
                             int64_t encoded_body_size) override {
       original_peer_->OnReceivedResponse(response_info_);
       if (!data_.empty()) {
-        original_peer_->OnReceivedData(base::MakeUnique<FixedReceivedData>(
-            data_.data(), data_.size(), -1));
+        original_peer_->OnReceivedData(
+            base::MakeUnique<FixedReceivedData>(data_.data(), data_.size()));
       }
       original_peer_->OnCompletedRequest(
           error_code, was_ignored_by_handler, stale_copy_in_cache,

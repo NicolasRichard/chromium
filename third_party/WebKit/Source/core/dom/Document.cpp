@@ -558,7 +558,7 @@ Document::~Document() {
 
 SelectorQueryCache& Document::selectorQueryCache() {
   if (!m_selectorQueryCache)
-    m_selectorQueryCache = makeUnique<SelectorQueryCache>();
+    m_selectorQueryCache = WTF::makeUnique<SelectorQueryCache>();
   return *m_selectorQueryCache;
 }
 
@@ -666,7 +666,7 @@ Element* Document::createElement(const AtomicString& name,
           *this,
           QualifiedName(nullAtom, localName, HTMLNames::xhtmlNamespaceURI));
     }
-    return HTMLElementFactory::createHTMLElement(localName, *this, 0,
+    return HTMLElementFactory::createHTMLElement(localName, *this,
                                                  CreatedByCreateElement);
   }
   return Element::create(QualifiedName(nullAtom, name, nullAtom), this);
@@ -1174,8 +1174,7 @@ Element* Document::createElement(const QualifiedName& qName,
   // FIXME: Use registered namespaces and look up in a hash to find the right
   // factory.
   if (qName.namespaceURI() == xhtmlNamespaceURI)
-    e = HTMLElementFactory::createHTMLElement(qName.localName(), *this, 0,
-                                              flags);
+    e = HTMLElementFactory::createHTMLElement(qName.localName(), *this, flags);
   else if (qName.namespaceURI() == SVGNames::svgNamespaceURI)
     e = SVGElementFactory::createSVGElement(qName.localName(), *this, flags);
 
@@ -4341,7 +4340,7 @@ Document::EventFactorySet& Document::eventFactories() {
 
 const OriginAccessEntry& Document::accessEntryFromURL() {
   if (!m_accessEntryFromURL) {
-    m_accessEntryFromURL = wrapUnique(
+    m_accessEntryFromURL = WTF::wrapUnique(
         new OriginAccessEntry(url().protocol(), url().host(),
                               OriginAccessEntry::AllowRegisterableDomains));
   }

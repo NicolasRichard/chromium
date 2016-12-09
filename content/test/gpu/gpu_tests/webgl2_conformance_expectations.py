@@ -43,23 +43,34 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # All platforms.
     self.Flaky('conformance2/query/occlusion-query.html', bug=603168)
     self.Fail('conformance2/glsl3/tricky-loop-conditions.html', bug=483282)
-    self.Flaky('conformance2/misc/uninitialized-test-2.html', bug=671791)
+
+    # This next one fails reliably on Linux AMD and is flaky everywhere
+    # else. Unfortunately, this means the expectation needs to be
+    # complicated to avoid collisions (and unit test failures).
+    self.Flaky('conformance2/misc/uninitialized-test-2.html',
+        ['win', 'mac', 'chromeos', 'android'], bug=671791)
+    self.Flaky('conformance2/misc/uninitialized-test-2.html',
+        ['linux', 'intel', 'nvidia'], bug=671791)
     self.Fail('conformance2/rendering/depth-stencil-feedback-loop.html',
         bug=660844) # WebGL 2.0.1
     self.Fail('conformance2/rendering/rendering-sampling-feedback-loop.html',
-        bug=660844)
+        bug=660844) # WebGL 2.0.1
+    self.Fail('conformance2/rendering/read-draw-when-missing-image.html',
+        bug=672719) # WebGL 2.0.1
+    self.Fail('conformance2/glsl3/float-parsing.html',
+        bug=672722) # WebGL 2.0.1
     self.Fail('conformance2/textures/misc/' +
         'integer-cubemap-specification-order-bug.html',
         bug=483282) # owner:cwallez, test might be buggy
     # Windows only.
-    self.Fail('conformance2/textures/misc/tex-srgb-mipmap.html',
-        ['win'], bug=634519)
     self.Fail('conformance2/rendering/blitframebuffer-outside-readbuffer.html',
         ['win'], bug=644740)
 
     # Win / NVidia
     self.Flaky('deqp/functional/gles3/fbomultisample*',
         ['win', 'nvidia'], bug=631317)
+    self.Fail('conformance/glsl/bugs/unary-minus-operator-float-bug.html',
+        ['win', 'nvidia'], bug=672380)
 
     # Win / AMD
     self.Fail('conformance2/rendering/blitframebuffer-stencil-only.html',
@@ -94,8 +105,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         'texture-offset-uniform-texture-coordinate.html',
         ['win', 'intel'], bug=662644) # WebGL 2.0.1
     self.Fail('conformance2/glsl3/unary-minus-operator-in-dynamic-loop.html',
-        ['win', 'intel'], bug=662644) # WebGL 2.0.1
-    self.Fail('conformance2/rendering/clear-srgb-color-buffer.html',
         ['win', 'intel'], bug=662644) # WebGL 2.0.1
     self.Skip('conformance2/textures/misc/copy-texture-image.html',
         ['win', 'intel'], bug=617449)
@@ -522,6 +531,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/uniformbuffers/random.html',
         ['mac', 'intel'], bug=618464)
 
+    # Failed on OSX 10.10 and 10.11
+    self.Fail('conformance/glsl/bugs/unary-minus-operator-float-bug.html',
+        ['mac', 'intel'], bug=672380)
+
     # Linux only.
     self.Flaky('conformance/textures/video/' +
                'tex-2d-rgba-rgba-unsigned_byte.html',
@@ -547,8 +560,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Flaky('deqp/functional/gles3/texturespecification/' +
         'random_teximage2d_2d.html',
         ['linux', 'amd', 'intel'], bug=618447)
-    self.Fail('conformance2/rendering/clear-srgb-color-buffer.html',
-        ['linux', 'amd', 'intel'], bug=662644) # WebGL 2.0.1
     self.Fail('conformance2/rendering/clipping-wide-points.html',
         ['linux', 'amd', 'intel'], bug=662644) # WebGL 2.0.1
 
@@ -557,6 +568,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Flaky('deqp/functional/gles3/texturespecification/' +
         'random_teximage2d_2d.html',
         ['linux', 'nvidia'], bug=618447)
+    self.Fail('conformance/glsl/bugs/unary-minus-operator-float-bug.html',
+        ['linux', 'nvidia'], bug=672380)
 
     # Linux Intel
     self.Fail('conformance2/extensions/ext-color-buffer-float.html',
@@ -585,8 +598,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Linux Intel with ANGLE only
     self.Fail('deqp/functional/gles3/framebufferblit/conversion_07.html',
         ['linux', 'intel', 'opengl'], bug=598902)
-    self.Fail('conformance2/textures/misc/tex-srgb-mipmap.html',
-        ['linux', 'intel', 'opengl'], bug=634519) # WebGL 2.0.1
 
     # Linux AMD only.
     # It looks like AMD shader compiler rejects many valid ES3 semantics.
@@ -623,6 +634,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/transformfeedback/array_separate*.html',
         ['linux', 'amd'], bug=483282)
 
+    self.Fail('conformance2/misc/uninitialized-test-2.html',
+        ['linux', 'amd'], bug=483282)
     self.Fail('conformance2/rendering/blitframebuffer-filter-srgb.html',
         ['linux', 'amd'], bug=634525)
     self.Fail('conformance2/rendering/blitframebuffer-outside-readbuffer.html',

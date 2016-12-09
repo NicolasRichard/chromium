@@ -61,7 +61,7 @@ class InheritedAutosChecker : public InterpolationType::ConversionChecker {
  public:
   static std::unique_ptr<InheritedAutosChecker> create(
       const ClipAutos& inheritedAutos) {
-    return wrapUnique(new InheritedAutosChecker(inheritedAutos));
+    return WTF::wrapUnique(new InheritedAutosChecker(inheritedAutos));
   }
 
  private:
@@ -107,7 +107,7 @@ class UnderlyingAutosChecker : public InterpolationType::ConversionChecker {
 
   static std::unique_ptr<UnderlyingAutosChecker> create(
       const ClipAutos& underlyingAutos) {
-    return wrapUnique(new UnderlyingAutosChecker(underlyingAutos));
+    return WTF::wrapUnique(new UnderlyingAutosChecker(underlyingAutos));
   }
 
   static ClipAutos getUnderlyingAutos(const InterpolationValue& underlying) {
@@ -162,7 +162,7 @@ InterpolationValue CSSClipInterpolationType::maybeConvertNeutral(
     ConversionCheckers& conversionCheckers) const {
   ClipAutos underlyingAutos =
       UnderlyingAutosChecker::getUnderlyingAutos(underlying);
-  conversionCheckers.append(UnderlyingAutosChecker::create(underlyingAutos));
+  conversionCheckers.push_back(UnderlyingAutosChecker::create(underlyingAutos));
   if (underlyingAutos.isAuto)
     return nullptr;
   LengthBox neutralBox(
@@ -183,7 +183,7 @@ InterpolationValue CSSClipInterpolationType::maybeConvertInherit(
     const StyleResolverState& state,
     ConversionCheckers& conversionCheckers) const {
   ClipAutos inheritedAutos = getClipAutos(*state.parentStyle());
-  conversionCheckers.append(InheritedAutosChecker::create(inheritedAutos));
+  conversionCheckers.push_back(InheritedAutosChecker::create(inheritedAutos));
   if (inheritedAutos.isAuto)
     return nullptr;
   return createClipValue(state.parentStyle()->clip(),
