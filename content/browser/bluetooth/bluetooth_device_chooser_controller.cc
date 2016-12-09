@@ -30,12 +30,40 @@ using UUIDSet = device::BluetoothDevice::UUIDSet;
 
 namespace {
 
+// RSSI values are displayed by the chooser to empower a user to differentiate
+// between multiple devices with the same name. Comparing devices with different
+// names is not a goal. It is important that a user be able to move away from a
+// device and have it transition between two different signal strength levels.
+//
+// RSSI Min and Max values are determined from real world values collected via
+// UMA in RecordRSSISignalStrength. They are selected to span the range of
+// encountered values, and avoid too many devices saturating the strongest
+// signal level displayed.
+//
+// Measured RSSI values from UMA are charted here:
+// https://goo.gl/photos/pCoAkF7mPyza9B1k7 (2016-12-08)
+// and summarized roughly as:
+//  dBm   CDF* Histogram Bucket Quantity (hand drawn)
+// -100  0.01% -
+//  -90  1.90% --
+//  -80  9.20% ---
+//  -70  22.0% ----
+//  -60  47.9% --------
+//  -50  72.8% --------
+//  -40  94.5% ---
+//  -30  99.0% -
+//
+// CDF: Cumulative Distribution Function:
+// https://en.wikipedia.org/wiki/Cumulative_distribution_function
+//
+// Number of RSSI levels used in the signal strength image. Conceptually
+// entangled with the k80thPercentileRSSI value.
+const int kNumSignalStrengthLevels = 5;
 // Anything worse than or equal to this will show 0 bars.
 const int kMinRSSI = -100;
-// Anything better than or equal to this will show the maximum bars.
-const int kMaxRSSI = -37;
-// Number of RSSI levels used in the signal strength image.
-const int kNumSignalStrengthLevels = 5;
+// The threshold 80% of RSSI values fall below. This is the lower threshold for
+// the highest displayed level when kNumSignalStrengthLevels == 5.
+const int k80thPercentileRSSI = -47;
 
 const content::UMARSSISignalStrengthLevel kRSSISignalStrengthEnumTable[] = {
     content::UMARSSISignalStrengthLevel::LEVEL_0,
@@ -436,9 +464,9 @@ int BluetoothDeviceChooserController::CalculateSignalStrengthLevel(
     int8_t rssi) {
   RecordRSSISignalStrength(rssi);
 
-  double input_range = kMaxRSSI - kMinRSSI;
-  double output_range = kNumSignalStrengthLevels;
-  int level = static_cast<int>((rssi - kMinRSSI) * output_range / input_range);
+  double input_range = k80thPercentileRSSI - kMinRSSI;
+  int level = static_cast<int>((rssi - kMinRSSI) / input_range *
+                               (kNumSignalStrengthLevels - 1));
 
   if (level < 0) {
     RecordRSSISignalStrengthLevel(
