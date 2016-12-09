@@ -70,6 +70,8 @@ const int k40thPercentileRSSI = -63;
 const int k60thPercentileRSSI = -55;
 const int k80thPercentileRSSI = -47;
 
+}  // namespace
+
 namespace content {
 
 bool BluetoothDeviceChooserController::use_test_scan_duration_ = false;
