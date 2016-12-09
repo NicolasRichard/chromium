@@ -498,7 +498,7 @@ int BluetoothDeviceChooserController::CalculateSignalStrengthLevel(
     level = 2;
   } else if (rssi < k88thPercentileRSSI) {
     level = 3;
-  } else
+  } else {
     level = 4;
   }
 
