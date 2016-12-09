@@ -59,9 +59,8 @@ namespace blink {
 using namespace HTMLNames;
 
 TextControlElement::TextControlElement(const QualifiedName& tagName,
-                                       Document& doc,
-                                       HTMLFormElement* form)
-    : HTMLFormControlElementWithState(tagName, doc, form),
+                                       Document& doc)
+    : HTMLFormControlElementWithState(tagName, doc),
       m_lastChangeWasUserEdit(false),
       m_cachedSelectionStart(0),
       m_cachedSelectionEnd(0) {
@@ -866,7 +865,7 @@ TextControlElement* enclosingTextControl(const Position& position) {
   return enclosingTextControl(position.computeContainerNode());
 }
 
-TextControlElement* enclosingTextControl(Node* container) {
+TextControlElement* enclosingTextControl(const Node* container) {
   if (!container)
     return nullptr;
   Element* ancestor = container->ownerShadowHost();

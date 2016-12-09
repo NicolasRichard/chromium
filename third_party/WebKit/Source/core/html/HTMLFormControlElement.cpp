@@ -47,8 +47,7 @@ namespace blink {
 using namespace HTMLNames;
 
 HTMLFormControlElement::HTMLFormControlElement(const QualifiedName& tagName,
-                                               Document& document,
-                                               HTMLFormElement* form)
+                                               Document& document)
     : LabelableElement(tagName, document),
       m_ancestorDisabledState(AncestorDisabledStateUnknown),
       m_dataListAncestorState(Unknown),
@@ -574,6 +573,8 @@ void HTMLFormControlElement::setNeedsValidityCheck() {
     fieldSetAncestorsSetNeedsValidityCheck(parentNode());
     pseudoStateChanged(CSSSelector::PseudoValid);
     pseudoStateChanged(CSSSelector::PseudoInvalid);
+    pseudoStateChanged(CSSSelector::PseudoInRange);
+    pseudoStateChanged(CSSSelector::PseudoOutOfRange);
   }
 
   // Updates only if this control already has a validation message.

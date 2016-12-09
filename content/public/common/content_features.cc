@@ -136,7 +136,7 @@ const base::Feature kPassiveDocumentEventListeners{
 // Whether we should force a touchstart and first touchmove per scroll event
 // listeners to be 'passive' during fling.
 const base::Feature kPassiveEventListenersDueToFling{
-    "PassiveEventListenersDueToFling", base::FEATURE_DISABLED_BY_DEFAULT};
+    "PassiveEventListenersDueToFling", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Pointer events support.
 const base::Feature kPointerEvents{"PointerEvent",
@@ -233,11 +233,6 @@ const base::Feature kSendBeaconThrowForBlobWithNonSimpleType{
     base::FEATURE_DISABLED_BY_DEFAULT};
 
 #if defined(OS_ANDROID)
-// Use IME's own thread instead of using main UI thread. It also means that
-// we will not use replica editor and do a round trip to renderer to synchronize
-// with Blink data.
-const base::Feature kImeThread{"ImeThread", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // FeatureList definition for the Seccomp field trial.
 const base::Feature kSeccompSandboxAndroid{"SeccompSandboxAndroid",
                                            base::FEATURE_DISABLED_BY_DEFAULT};

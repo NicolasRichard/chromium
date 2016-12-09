@@ -113,7 +113,7 @@ class InheritedRotationChecker : public InterpolationType::ConversionChecker {
  public:
   static std::unique_ptr<InheritedRotationChecker> create(
       const Rotation& inheritedRotation) {
-    return wrapUnique(new InheritedRotationChecker(inheritedRotation));
+    return WTF::wrapUnique(new InheritedRotationChecker(inheritedRotation));
   }
 
   bool isValid(const InterpolationEnvironment& environment,
@@ -149,7 +149,7 @@ InterpolationValue CSSRotateInterpolationType::maybeConvertInherit(
     const StyleResolverState& state,
     ConversionCheckers& conversionCheckers) const {
   Rotation inheritedRotation = getRotation(*state.parentStyle());
-  conversionCheckers.append(
+  conversionCheckers.push_back(
       InheritedRotationChecker::create(inheritedRotation));
   return convertRotation(inheritedRotation);
 }

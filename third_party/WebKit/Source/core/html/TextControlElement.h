@@ -147,7 +147,7 @@ class CORE_EXPORT TextControlElement : public HTMLFormControlElementWithState {
   static Position endOfSentence(const Position&);
 
  protected:
-  TextControlElement(const QualifiedName&, Document&, HTMLFormElement*);
+  TextControlElement(const QualifiedName&, Document&);
   bool isPlaceholderEmpty() const;
   virtual void updatePlaceholderText() = 0;
 
@@ -223,7 +223,7 @@ inline bool isTextControlElement(const Element& element) {
 DEFINE_HTMLELEMENT_TYPE_CASTS_WITH_FUNCTION(TextControlElement);
 
 TextControlElement* enclosingTextControl(const Position&);
-TextControlElement* enclosingTextControl(Node*);
+TextControlElement* enclosingTextControl(const Node*);
 
 }  // namespace blink
 

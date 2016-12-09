@@ -1017,15 +1017,6 @@ void ChromeClientImpl::willSetInputMethodState() {
     m_webView->client()->resetInputMethod();
 }
 
-void ChromeClientImpl::didUpdateTextOfFocusedElementByNonUserInput(
-    LocalFrame& frame) {
-  WebLocalFrameImpl* webFrame =
-      WebLocalFrameImpl::fromFrame(frame.localFrameRoot());
-  webFrame->frameWidget()
-      ->client()
-      ->didUpdateTextOfFocusedElementByNonUserInput();
-}
-
 void ChromeClientImpl::showImeIfNeeded() {
   if (m_webView->client())
     m_webView->client()->showImeIfNeeded();
@@ -1142,7 +1133,7 @@ void ChromeClientImpl::didObserveNonGetFetchFromScript() const {
 
 std::unique_ptr<WebFrameScheduler> ChromeClientImpl::createFrameScheduler(
     BlameContext* blameContext) {
-  return wrapUnique(
+  return WTF::wrapUnique(
       m_webView->scheduler()->createFrameScheduler(blameContext).release());
 }
 

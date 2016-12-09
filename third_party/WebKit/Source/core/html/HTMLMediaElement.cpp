@@ -3707,7 +3707,7 @@ void HTMLMediaElement::setWebLayer(WebLayer* webLayer) {
 
 void HTMLMediaElement::mediaSourceOpened(WebMediaSource* webMediaSource) {
   setShouldDelayLoadEvent(false);
-  m_mediaSource->setWebMediaSourceAndOpen(wrapUnique(webMediaSource));
+  m_mediaSource->setWebMediaSourceAndOpen(WTF::wrapUnique(webMediaSource));
 }
 
 bool HTMLMediaElement::isInteractiveContent() const {
@@ -4037,7 +4037,7 @@ void HTMLMediaElement::checkViewportIntersectionChanged() {
   // TODO(xjz): Early return if we not in tab mirroring.
 
   IntersectionGeometry geometry(
-      &document(), this, Vector<Length>(),
+      document().frame()->localFrameRoot()->document(), this, Vector<Length>(),
       IntersectionGeometry::ReportRootBounds::kShouldReportRootBounds);
   geometry.computeGeometry();
   IntRect intersectRect = geometry.intersectionIntRect();

@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/profiler/scoped_tracker.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
@@ -27,6 +28,7 @@
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_registration_handle.h"
 #include "content/common/service_worker/embedded_worker_messages.h"
+#include "content/common/service_worker/service_worker_event_dispatcher.mojom.h"
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/common/service_worker/service_worker_utils.h"
@@ -481,12 +483,6 @@ void ServiceWorkerDispatcherHost::OnUnregisterServiceWorker(
   std::vector<GURL> urls = {provider_host->document_url(),
                             registration->pattern()};
   if (!ServiceWorkerUtils::AllOriginsMatchAndCanAccessServiceWorkers(urls)) {
-    // Temporary debugging for https://crbug.com/619294
-    base::debug::ScopedCrashKey host_url_key(
-        "swdh_unregister_cannot_host_url",
-        provider_host->document_url().spec());
-    base::debug::ScopedCrashKey scope_url_key(
-        "swdh_unregister_cannot_scope_url", registration->pattern().spec());
     bad_message::ReceivedBadMessage(this, bad_message::SWDH_UNREGISTER_CANNOT);
     return;
   }
@@ -1081,6 +1077,13 @@ void ServiceWorkerDispatcherHost::OnSetHostedVersionId(int provider_id,
 
   // A process for the worker must be equal to a process for the provider host.
   if (version->embedded_worker()->process_id() != provider_host->process_id()) {
+    // Temporary debugging for https://crbug.com/668633
+    base::debug::ScopedCrashKey scope_worker_pid(
+        "swdh_set_hosted_version_worker_pid",
+        base::IntToString(version->embedded_worker()->process_id()));
+    base::debug::ScopedCrashKey scope_provider_host_pid(
+        "swdh_set_hosted_version_host_pid",
+        base::IntToString(provider_host->process_id()));
     bad_message::ReceivedBadMessage(
         this, bad_message::SWDH_SET_HOSTED_VERSION_PROCESS_MISMATCH);
     return;
@@ -1167,24 +1170,27 @@ void ServiceWorkerDispatcherHost::
   std::vector<int> new_routing_ids;
   filter->UpdateMessagePortsWithNewRoutes(sent_message_ports, &new_routing_ids);
 
-  ServiceWorkerMsg_ExtendableMessageEvent_Params params;
-  params.message = message;
-  params.source_origin = source_origin;
-  params.message_ports = sent_message_ports;
-  params.new_routing_ids = new_routing_ids;
-  params.source = source;
+  mojom::ExtendableMessageEventPtr event = mojom::ExtendableMessageEvent::New();
+  event->message = message;
+  event->source_origin = source_origin;
+  event->message_ports = sent_message_ports;
+  event->new_routing_ids = new_routing_ids;
+  event->source = source;
 
   // Hide the client url if the client has a unique origin.
   if (source_origin.unique()) {
-    if (params.source.client_info.IsValid())
-      params.source.client_info.url = GURL();
+    if (event->source.client_info.IsValid())
+      event->source.client_info.url = GURL();
     else
-      params.source.service_worker_info.url = GURL();
+      event->source.service_worker_info.url = GURL();
   }
 
-  worker->DispatchSimpleEvent<
-      ServiceWorkerHostMsg_ExtendableMessageEventFinished>(
-      request_id, ServiceWorkerMsg_ExtendableMessageEvent(request_id, params));
+  // |event_dispatcher| is owned by |worker|, once |worker| got destroyed, the
+  // bound function will never be called, so it is safe to use
+  // base::Unretained() here.
+  worker->event_dispatcher()->DispatchExtendableMessageEvent(
+      std::move(event), base::Bind(&ServiceWorkerVersion::OnSimpleEventFinished,
+                                   base::Unretained(worker.get()), request_id));
 }
 
 template <typename SourceInfo>

@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/features.gni")
+import("//build/config/ios/rules.gni")
 import("//third_party/protobuf/proto_library.gni")
 
 declare_args() {
@@ -73,6 +74,7 @@ source_set("browser") {
     "xcallback_parameters.mm",
   ]
   deps = [
+    ":settings_resources",
     "//base",
     "//components/autofill/core/browser",
     "//components/autofill/core/common",
@@ -215,6 +217,16 @@ source_set("about_flags") {
     "GOOGLE_TEST_OAUTH_CLIENT_SECRET=\"$google_test_oauth_client_secret\"",
     "GOOGLE_TEST_OAUTH_URL=\"$google_test_oauth_url\"",
     "GOOGLE_TEST_SYNC_URL=\"$google_test_sync_url\"",
+  ]
+}
+
+bundle_data("settings_resources") {
+  sources = [
+    "resources/Settings.bundle/Experimental.plist",
+    "resources/Settings.bundle/Root.plist",
+  ]
+  outputs = [
+    "{{bundle_resources_dir}}/Settings.bundle/{{source_file_part}}",
   ]
 }
 

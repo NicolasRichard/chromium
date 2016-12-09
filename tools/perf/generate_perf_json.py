@@ -76,6 +76,35 @@ SCRIPT_TESTS = [
       ],
     }
   },
+  {
+    'args': [
+      'tracing_perftests',
+      '--adb-path',
+      'src/third_party/catapult/devil/bin/deps/linux2/x86_64/bin/adb',
+    ],
+    'name': 'tracing_perftests',
+    'script': 'gtest_perf_test.py',
+    'testers': {
+      'chromium.perf': [
+        {
+          'name': 'Android Nexus5 Perf',
+          'shards': [2]
+        },
+        {
+          'name': 'Android Nexus6 Perf',
+          'shards': [2]
+        },
+        {
+          'name': 'Android Nexus7v2 Perf',
+          'shards': [2]
+        },
+        {
+          'name': 'Android Nexus9 Perf',
+          'shards': [2]
+        },
+      ]
+    }
+  },
 ]
 
 
@@ -131,6 +160,22 @@ def get_fyi_waterfall_config():
          ('angle_perftests', 1),
          ('performance_browser_tests', 1),
          ('tracing_perftests', 1)]
+      }
+    ],
+    use_whitelist=True)
+  waterfall = add_tester(
+    waterfall, 'Android Swarming N5X Tester',
+    'fyi-android-swarming-n5x', 'android',
+    swarming=[
+      {
+       'os': 'Android',
+       'android_devices': '1',
+       'device_ids': [
+           'build245-m4--device1', 'build245-m4--device2',
+           'build245-m4--device3', 'build245-m4--device4',
+           'build245-m4--device5', 'build245-m4--device6',
+           'build245-m4--device7'
+        ]
       }
     ],
     use_whitelist=True)
@@ -405,6 +450,7 @@ def generate_isolate_script_entry(swarming_dimensions, test_args,
       'can_use_on_swarming_builders': True,
       'expiration': 21600,
       'hard_timeout': 7200,
+      'io_timeout': 3600,
       'dimension_sets': swarming_dimensions,
     }
   return result
@@ -465,6 +511,8 @@ def get_swarming_dimension(dimension, device_affinity):
   }
   if 'gpu' in dimension:
     complete_dimension['gpu'] = dimension['gpu']
+  if 'android_devices' in dimension:
+    complete_dimension['android_devices'] = dimension['android_devices']
   return complete_dimension
 
 

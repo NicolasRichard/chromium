@@ -24,7 +24,7 @@ class MusContextFactory;
 }
 
 namespace ui {
-class GpuService;
+class Gpu;
 
 // WindowServerTestBase is a base class for use with shell tests that use
 // WindowServer. SetUp() connects to the WindowServer and blocks until OnEmbed()
@@ -66,9 +66,9 @@ class WindowServerTestBase
   // Cleans up internal state then deletes |client|.
   void DeleteWindowTreeClient(aura::WindowTreeClient* client);
 
-  // Returns the most WindowTreeClient that was created as the result of
+  // Returns the most recent WindowTreeClient that was created as the result of
   // InterfaceFactory<WindowTreeClient> being called. In other words the most
-  // recent WindowTreeClient created for an embed.
+  // recent WindowTreeClient created as the result of a client embedding.
   std::unique_ptr<aura::WindowTreeClient> ReleaseMostRecentClient();
 
   // testing::Test:
@@ -133,7 +133,7 @@ class WindowServerTestBase
   display::ScreenBase screen_;
   aura::PropertyConverter property_converter_;
 
-  std::unique_ptr<GpuService> gpu_service_;
+  std::unique_ptr<Gpu> gpu_;
   std::unique_ptr<aura::MusContextFactory> compositor_context_factory_;
 
   std::vector<std::unique_ptr<aura::WindowTreeClient>> window_tree_clients_;

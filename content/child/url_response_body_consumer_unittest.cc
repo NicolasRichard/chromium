@@ -20,6 +20,7 @@
 #include "net/base/request_priority.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -53,6 +54,8 @@ class TestRequestPeer : public RequestPeer {
     context_->data.append(data->payload(), data->length());
     context_->run_loop_quit_closure.Run();
   }
+
+  void OnTransferSizeUpdated(int transfer_size_diff) override {}
 
   void OnCompletedRequest(int error_code,
                           bool was_ignored_by_handler,
@@ -126,7 +129,7 @@ class URLResponseBodyConsumerTest : public ::testing::Test,
   int SetUpRequestPeer(std::unique_ptr<ResourceRequest> request,
                        TestRequestPeer::Context* context) {
     return dispatcher_->StartAsync(
-        std::move(request), 0, nullptr, GURL(),
+        std::move(request), 0, nullptr, url::Origin(),
         base::MakeUnique<TestRequestPeer>(context),
         blink::WebURLRequest::LoadingIPCType::ChromeIPC, nullptr, nullptr);
   }

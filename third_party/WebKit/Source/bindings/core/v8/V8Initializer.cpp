@@ -291,19 +291,9 @@ static void failedAccessCheckCallbackInMainThread(v8::Local<v8::Object> host,
                                                   v8::Local<v8::Value> data) {
   v8::Isolate* isolate = v8::Isolate::GetCurrent();
   Frame* target = findFrame(isolate, host, data);
-  if (!target)
-    return;
-  DOMWindow* targetWindow = target->domWindow();
-
   // FIXME: We should modify V8 to pass in more contextual information (context,
   // property, and object).
-  ExceptionState exceptionState(ExceptionState::UnknownContext, 0, 0,
-                                isolate->GetCurrentContext()->Global(),
-                                isolate);
-  exceptionState.throwSecurityError(
-      targetWindow->sanitizedCrossDomainAccessErrorMessage(
-          currentDOMWindow(isolate)),
-      targetWindow->crossDomainAccessErrorMessage(currentDOMWindow(isolate)));
+  BindingSecurity::failedAccessCheckFor(isolate, target);
 }
 
 static bool codeGenerationCheckCallbackInMainThread(
@@ -404,8 +394,8 @@ void V8Initializer::initializeMainThread() {
 
   if (RuntimeEnabledFeatures::v8IdleTasksEnabled()) {
     WebScheduler* scheduler = Platform::current()->currentThread()->scheduler();
-    V8PerIsolateData::enableIdleTasks(isolate,
-                                      makeUnique<V8IdleTaskRunner>(scheduler));
+    V8PerIsolateData::enableIdleTasks(
+        isolate, WTF::makeUnique<V8IdleTaskRunner>(scheduler));
   }
 
   isolate->SetPromiseRejectCallback(promiseRejectHandlerInMainThread);
@@ -416,7 +406,7 @@ void V8Initializer::initializeMainThread() {
 
   ASSERT(ThreadState::mainThreadState());
   ThreadState::mainThreadState()->addInterruptor(
-      makeUnique<V8IsolateInterruptor>(isolate));
+      WTF::makeUnique<V8IsolateInterruptor>(isolate));
   if (RuntimeEnabledFeatures::traceWrappablesEnabled()) {
     ThreadState::mainThreadState()->registerTraceDOMWrappers(
         isolate, V8GCController::traceDOMWrappers,
@@ -428,7 +418,7 @@ void V8Initializer::initializeMainThread() {
   }
 
   V8PerIsolateData::from(isolate)->setThreadDebugger(
-      makeUnique<MainThreadDebugger>(isolate));
+      WTF::makeUnique<MainThreadDebugger>(isolate));
 }
 
 void V8Initializer::shutdownMainThread() {

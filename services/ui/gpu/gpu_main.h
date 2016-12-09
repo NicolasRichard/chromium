@@ -9,7 +9,7 @@
 #include "gpu/ipc/in_process_command_buffer.h"
 #include "gpu/ipc/service/gpu_init.h"
 #include "services/ui/gpu/interfaces/gpu_main.mojom.h"
-#include "services/ui/gpu/interfaces/gpu_service_internal.mojom.h"
+#include "services/ui/gpu/interfaces/gpu_service.mojom.h"
 #include "services/ui/surfaces/display_compositor.h"
 
 namespace gpu {
@@ -19,7 +19,7 @@ class ImageFactory;
 
 namespace ui {
 
-class GpuServiceInternal;
+class GpuService;
 
 class GpuMain : public gpu::GpuSandboxHelper, public mojom::GpuMain {
  public:
@@ -27,15 +27,15 @@ class GpuMain : public gpu::GpuSandboxHelper, public mojom::GpuMain {
   ~GpuMain() override;
 
   // mojom::GpuMain implementation:
-  void CreateGpuService(mojom::GpuServiceInternalRequest request,
-                        const CreateGpuServiceCallback& callback) override;
+  void CreateGpuService(mojom::GpuServiceRequest request,
+                        mojom::GpuHostPtr gpu_host) override;
   void CreateDisplayCompositor(
       cc::mojom::DisplayCompositorRequest request,
       cc::mojom::DisplayCompositorClientPtr client) override;
 
   void OnStart();
 
-  GpuServiceInternal* gpu_service() { return gpu_service_internal_.get(); }
+  GpuService* gpu_service() { return gpu_service_.get(); }
 
  private:
   void InitOnGpuThread(
@@ -47,13 +47,12 @@ class GpuMain : public gpu::GpuSandboxHelper, public mojom::GpuMain {
       cc::mojom::DisplayCompositorClientPtrInfo client_info);
   void CreateDisplayCompositorOnCompositorThread(
       gpu::ImageFactory* image_factory,
-      mojom::GpuServiceInternalPtrInfo gpu_service_info,
+      mojom::GpuServicePtrInfo gpu_service_info,
       cc::mojom::DisplayCompositorRequest request,
       cc::mojom::DisplayCompositorClientPtrInfo client_info);
-  void CreateGpuServiceOnGpuThread(
-      mojom::GpuServiceInternalRequest request,
-      scoped_refptr<base::SingleThreadTaskRunner> origin_runner,
-      const CreateGpuServiceCallback& callback);
+  void CreateGpuServiceOnGpuThread(mojom::GpuServiceRequest request,
+                                   mojom::GpuHostPtrInfo gpu_host_info);
+  void BindGpuInternalOnGpuThread(mojom::GpuServiceRequest request);
 
   void TearDownOnCompositorThread();
   void TearDownOnGpuThread();
@@ -64,11 +63,11 @@ class GpuMain : public gpu::GpuSandboxHelper, public mojom::GpuMain {
       gpu::GpuWatchdogThread* watchdog_thread) override;
 
   std::unique_ptr<gpu::GpuInit> gpu_init_;
-  std::unique_ptr<GpuServiceInternal> gpu_service_internal_;
+  std::unique_ptr<GpuService> gpu_service_;
 
   // The message-pipe used by the DisplayCompositor to request gpu memory
   // buffers.
-  mojom::GpuServiceInternalPtr gpu_internal_;
+  mojom::GpuServicePtr gpu_internal_;
 
   // The InCommandCommandBuffer::Service used by the display compositor.
   scoped_refptr<gpu::InProcessCommandBuffer::Service> gpu_command_service_;
@@ -83,10 +82,10 @@ class GpuMain : public gpu::GpuSandboxHelper, public mojom::GpuMain {
 
   std::unique_ptr<gpu::GpuMemoryBufferFactory> gpu_memory_buffer_factory_;
 
-  // The main thread for GpuService.
+  // The main thread for Gpu.
   base::Thread gpu_thread_;
 
-  // The thread that handles IO events for GpuService.
+  // The thread that handles IO events for Gpu.
   base::Thread io_thread_;
 
   // The display compositor gets its own thread in mus-gpu. The gpu service,

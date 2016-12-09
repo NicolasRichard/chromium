@@ -26,7 +26,8 @@ InterpolationValue CSSLengthListInterpolationType::maybeConvertNeutral(
     ConversionCheckers& conversionCheckers) const {
   size_t underlyingLength =
       UnderlyingLengthChecker::getUnderlyingLength(underlying);
-  conversionCheckers.append(UnderlyingLengthChecker::create(underlyingLength));
+  conversionCheckers.push_back(
+      UnderlyingLengthChecker::create(underlyingLength));
 
   if (underlyingLength == 0)
     return nullptr;
@@ -67,7 +68,7 @@ class InheritedLengthListChecker : public InterpolationType::ConversionChecker {
   static std::unique_ptr<InheritedLengthListChecker> create(
       CSSPropertyID property,
       const Vector<Length>& inheritedLengthList) {
-    return wrapUnique(
+    return WTF::wrapUnique(
         new InheritedLengthListChecker(property, inheritedLengthList));
   }
 
@@ -94,7 +95,7 @@ InterpolationValue CSSLengthListInterpolationType::maybeConvertInherit(
   Vector<Length> inheritedLengthList;
   bool success = LengthListPropertyFunctions::getLengthList(
       cssProperty(), *state.parentStyle(), inheritedLengthList);
-  conversionCheckers.append(
+  conversionCheckers.push_back(
       InheritedLengthListChecker::create(cssProperty(), inheritedLengthList));
   if (!success)
     return nullptr;

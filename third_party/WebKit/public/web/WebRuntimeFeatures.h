@@ -98,7 +98,6 @@ class WebRuntimeFeatures {
   BLINK_EXPORT static void enablePagePopup(bool);
   BLINK_EXPORT static void enableParseHTMLOnMainThread(bool);
   BLINK_EXPORT static void enablePassiveDocumentEventListeners(bool);
-  BLINK_EXPORT static void enablePassiveEventListenersDueToFling(bool);
   BLINK_EXPORT static void enablePaymentRequest(bool);
   BLINK_EXPORT static void enablePermissionsAPI(bool);
   BLINK_EXPORT static void enablePointerEvent(bool);
@@ -117,7 +116,7 @@ class WebRuntimeFeatures {
   BLINK_EXPORT static void enableSlimmingPaintV2(bool);
   BLINK_EXPORT static void enableSlimmingPaintInvalidation(bool);
   BLINK_EXPORT static void enableSpeculativeLaunchServiceWorker(bool);
-  BLINK_EXPORT static void enableTouchEventAPI(bool);
+  BLINK_EXPORT static void enableTouchEventFeatureDetection(bool);
   BLINK_EXPORT static void enableV8IdleTasks(bool);
   BLINK_EXPORT static void enableWebAssemblySerialization(bool);
   BLINK_EXPORT static void enableWebBluetooth(bool);

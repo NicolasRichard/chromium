@@ -210,10 +210,6 @@ void WebRuntimeFeatures::enablePassiveDocumentEventListeners(bool enable) {
   RuntimeEnabledFeatures::setPassiveDocumentEventListenersEnabled(enable);
 }
 
-void WebRuntimeFeatures::enablePassiveEventListenersDueToFling(bool enable) {
-  RuntimeEnabledFeatures::setPassiveEventListenersDueToFlingEnabled(enable);
-}
-
 void WebRuntimeFeatures::enablePaymentRequest(bool enable) {
   RuntimeEnabledFeatures::setPaymentRequestEnabled(enable);
 }
@@ -242,8 +238,8 @@ void WebRuntimeFeatures::enableSpeculativeLaunchServiceWorker(bool enable) {
   RuntimeEnabledFeatures::setSpeculativeLaunchServiceWorkerEnabled(enable);
 }
 
-void WebRuntimeFeatures::enableTouchEventAPI(bool enable) {
-  RuntimeEnabledFeatures::setTouchEventAPIEnabled(enable);
+void WebRuntimeFeatures::enableTouchEventFeatureDetection(bool enable) {
+  RuntimeEnabledFeatures::setTouchEventFeatureDetectionEnabled(enable);
 }
 
 void WebRuntimeFeatures::enableWebGLDraftExtensions(bool enable) {

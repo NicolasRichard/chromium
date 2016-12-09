@@ -6,7 +6,7 @@ import("//build/config/ui.gni")
 
 source_set("gpu") {
   sources = [
-    "gpu_service.h",
+    "gpu.h",
   ]
 
   deps = [
@@ -25,9 +25,9 @@ source_set("internal") {
   ]
 
   sources = [
-    "gpu_service.cc",
-    "mojo_gpu_memory_buffer_manager.cc",
-    "mojo_gpu_memory_buffer_manager.h",
+    "client_gpu_memory_buffer_manager.cc",
+    "client_gpu_memory_buffer_manager.h",
+    "gpu.cc",
   ]
 
   deps = [

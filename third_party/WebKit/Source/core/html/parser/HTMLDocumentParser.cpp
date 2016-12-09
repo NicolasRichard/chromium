@@ -39,9 +39,9 @@
 #include "core/html/parser/AtomicHTMLToken.h"
 #include "core/html/parser/BackgroundHTMLParser.h"
 #include "core/html/parser/HTMLParserScheduler.h"
+#include "core/html/parser/HTMLParserScriptRunner.h"
 #include "core/html/parser/HTMLParserThread.h"
 #include "core/html/parser/HTMLResourcePreloader.h"
-#include "core/html/parser/HTMLScriptRunner.h"
 #include "core/html/parser/HTMLTreeBuilder.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
@@ -97,7 +97,8 @@ static HTMLTokenizer::State tokenizerStateForContextElement(
 HTMLDocumentParser::HTMLDocumentParser(HTMLDocument& document,
                                        ParserSynchronizationPolicy syncPolicy)
     : HTMLDocumentParser(document, AllowScriptingContent, syncPolicy) {
-  m_scriptRunner = HTMLScriptRunner::create(reentryPermit(), &document, this);
+  m_scriptRunner =
+      HTMLParserScriptRunner::create(reentryPermit(), &document, this);
   m_treeBuilder =
       HTMLTreeBuilder::create(this, document, AllowScriptingContent, m_options);
 }
@@ -125,8 +126,9 @@ HTMLDocumentParser::HTMLDocumentParser(Document& document,
     : ScriptableDocumentParser(document, contentPolicy),
       m_options(&document),
       m_reentryPermit(HTMLParserReentryPermit::create()),
-      m_token(syncPolicy == ForceSynchronousParsing ? wrapUnique(new HTMLToken)
-                                                    : nullptr),
+      m_token(syncPolicy == ForceSynchronousParsing
+                  ? WTF::wrapUnique(new HTMLToken)
+                  : nullptr),
       m_tokenizer(syncPolicy == ForceSynchronousParsing
                       ? HTMLTokenizer::create(m_options)
                       : nullptr),
@@ -173,7 +175,7 @@ DEFINE_TRACE(HTMLDocumentParser) {
   visitor->trace(m_scriptRunner);
   visitor->trace(m_preloader);
   ScriptableDocumentParser::trace(visitor);
-  HTMLScriptRunnerHost::trace(visitor);
+  HTMLParserScriptRunnerHost::trace(visitor);
 }
 
 void HTMLDocumentParser::detach() {
@@ -282,7 +284,7 @@ void HTMLDocumentParser::runScriptsForPausedTreeBuilder() {
       m_treeBuilder->takeScriptToProcess(scriptStartPosition);
   // We will not have a scriptRunner when parsing a DocumentFragment.
   if (m_scriptRunner)
-    m_scriptRunner->execute(scriptElement, scriptStartPosition);
+    m_scriptRunner->processScriptElement(scriptElement, scriptStartPosition);
 }
 
 bool HTMLDocumentParser::canTakeNextToken() {
@@ -458,7 +460,7 @@ void HTMLDocumentParser::discardSpeculationsAndResumeFrom(
   m_queuedPreloads.clear();
 
   std::unique_ptr<BackgroundHTMLParser::Checkpoint> checkpoint =
-      wrapUnique(new BackgroundHTMLParser::Checkpoint);
+      WTF::wrapUnique(new BackgroundHTMLParser::Checkpoint);
   checkpoint->parser = m_weakFactory.createWeakPtr();
   checkpoint->token = std::move(token);
   checkpoint->tokenizer = std::move(tokenizer);
@@ -473,7 +475,8 @@ void HTMLDocumentParser::discardSpeculationsAndResumeFrom(
 
   ASSERT(checkpoint->unparsedInput.isSafeToSendToAnotherThread());
   postTaskToLookaheadParser(Asynchronous, &BackgroundHTMLParser::resumeFrom,
-                            m_backgroundParser, passed(std::move(checkpoint)));
+                            m_backgroundParser,
+                            WTF::passed(std::move(checkpoint)));
 }
 
 size_t HTMLDocumentParser::processTokenizedChunkFromBackgroundParser(
@@ -782,7 +785,7 @@ void HTMLDocumentParser::insert(const SegmentedString& source) {
   if (!m_tokenizer) {
     ASSERT(!inPumpSession());
     ASSERT(m_haveBackgroundParser || wasCreatedByScript());
-    m_token = wrapUnique(new HTMLToken);
+    m_token = WTF::wrapUnique(new HTMLToken);
     m_tokenizer = HTMLTokenizer::create(m_options);
   }
 
@@ -821,10 +824,10 @@ void HTMLDocumentParser::startBackgroundParser() {
     document()->ensureStyleResolver();
 
   std::unique_ptr<BackgroundHTMLParser::Configuration> config =
-      wrapUnique(new BackgroundHTMLParser::Configuration);
+      WTF::wrapUnique(new BackgroundHTMLParser::Configuration);
   config->options = m_options;
   config->parser = m_weakFactory.createWeakPtr();
-  config->xssAuditor = wrapUnique(new XSSAuditor);
+  config->xssAuditor = WTF::wrapUnique(new XSSAuditor);
   config->xssAuditor->init(document(), &m_xssAuditorDelegate);
 
   config->decoder = takeDecoder();
@@ -850,7 +853,8 @@ void HTMLDocumentParser::startBackgroundParser() {
   // correct thread. We should get rid of it.
   postTaskToLookaheadParser(
       Synchronous, &BackgroundHTMLParser::init, m_backgroundParser,
-      document()->url(), passed(CachedDocumentParameters::create(document())),
+      document()->url(),
+      WTF::passed(CachedDocumentParameters::create(document())),
       MediaValuesCached::MediaValuesCachedData(*document()));
 }
 
@@ -994,7 +998,7 @@ void HTMLDocumentParser::finish() {
     ASSERT(!m_token);
     // We're finishing before receiving any data. Rather than booting up the
     // background parser just to spin it down, we finish parsing synchronously.
-    m_token = wrapUnique(new HTMLToken);
+    m_token = WTF::wrapUnique(new HTMLToken);
     m_tokenizer = HTMLTokenizer::create(m_options);
   }
 
@@ -1146,7 +1150,8 @@ void HTMLDocumentParser::appendBytes(const char* data, size_t length) {
     if (!m_haveBackgroundParser)
       startBackgroundParser();
 
-    std::unique_ptr<Vector<char>> buffer = makeUnique<Vector<char>>(length);
+    std::unique_ptr<Vector<char>> buffer =
+        WTF::makeUnique<Vector<char>>(length);
     memcpy(buffer->data(), data, length);
     TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("blink.debug"),
                  "HTMLDocumentParser::appendBytes", "size", (unsigned)length);
@@ -1158,7 +1163,7 @@ void HTMLDocumentParser::appendBytes(const char* data, size_t length) {
             : Asynchronous;
     postTaskToLookaheadParser(
         policy, &BackgroundHTMLParser::appendRawBytesFromMainThread,
-        m_backgroundParser, passed(std::move(buffer)), bytesReceivedTime);
+        m_backgroundParser, WTF::passed(std::move(buffer)), bytesReceivedTime);
     return;
   }
 
@@ -1175,7 +1180,7 @@ void HTMLDocumentParser::flush() {
     // Fallback to synchronous parsing in that case.
     if (!m_haveBackgroundParser) {
       m_shouldUseThreading = false;
-      m_token = wrapUnique(new HTMLToken);
+      m_token = WTF::wrapUnique(new HTMLToken);
       m_tokenizer = HTMLTokenizer::create(m_options);
       DecodedDataDocumentParser::flush();
       return;
@@ -1193,9 +1198,10 @@ void HTMLDocumentParser::setDecoder(
   ASSERT(decoder);
   DecodedDataDocumentParser::setDecoder(std::move(decoder));
 
-  if (m_haveBackgroundParser)
+  if (m_haveBackgroundParser) {
     postTaskToLookaheadParser(Asynchronous, &BackgroundHTMLParser::setDecoder,
-                              m_backgroundParser, passed(takeDecoder()));
+                              m_backgroundParser, WTF::passed(takeDecoder()));
+  }
 }
 
 void HTMLDocumentParser::documentElementAvailable() {

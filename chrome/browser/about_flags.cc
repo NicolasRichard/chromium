@@ -26,6 +26,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "cc/base/switches.h"
+#include "chrome/browser/prerender/prerender_field_trial.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_features.h"
@@ -134,14 +135,14 @@ namespace {
 const unsigned kOsAll = kOsMac | kOsWin | kOsLinux | kOsCrOS | kOsAndroid;
 const unsigned kOsDesktop = kOsMac | kOsWin | kOsLinux | kOsCrOS;
 
-const FeatureEntry::Choice kTouchEventsChoices[] = {
+const FeatureEntry::Choice kTouchEventFeatureDetectionChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_AUTOMATIC, "", "" },
   { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED,
-    switches::kTouchEvents,
-    switches::kTouchEventsEnabled },
+    switches::kTouchEventFeatureDetection,
+    switches::kTouchEventFeatureDetectionEnabled },
   { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
-    switches::kTouchEvents,
-    switches::kTouchEventsDisabled }
+    switches::kTouchEventFeatureDetection,
+    switches::kTouchEventFeatureDetectionDisabled }
 };
 
 #if defined(USE_AURA)
@@ -641,6 +642,26 @@ const FeatureEntry::Choice kEnableDefaultMediaSessionChoices[] = {
 };
 #endif  // !defined(OS_ANDROID)
 
+const FeatureEntry::FeatureParam kNoStatePrefetchEnabled[] = {
+    {prerender::kNoStatePrefetchFeatureModeParameterName,
+     prerender::kNoStatePrefetchFeatureModeParameterPrefetch}};
+
+const FeatureEntry::FeatureParam kNoStatePrefetchPrerender[] = {
+    {prerender::kNoStatePrefetchFeatureModeParameterName,
+     prerender::kNoStatePrefetchFeatureModeParameterPrerender}};
+
+const FeatureEntry::FeatureParam kNoStatePrefetchSimpleLoad[] = {
+    {prerender::kNoStatePrefetchFeatureModeParameterName,
+     prerender::kNoStatePrefetchFeatureModeParameterSimpleLoad}};
+
+const FeatureEntry::FeatureVariation kNoStatePrefetchFeatureVariations[] = {
+    {"No-state prefetch", kNoStatePrefetchEnabled,
+     arraysize(kNoStatePrefetchEnabled), nullptr},
+    {"Prerender", kNoStatePrefetchPrerender,
+     arraysize(kNoStatePrefetchPrerender), nullptr},
+    {"Simple load", kNoStatePrefetchSimpleLoad,
+     arraysize(kNoStatePrefetchSimpleLoad), nullptr}};
+
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
 // The first line of the entry is the internal name.
@@ -869,7 +890,7 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(switches::kExtendMdToSecondaryUi)},
     {"touch-events", IDS_FLAGS_TOUCH_EVENTS_NAME,
      IDS_FLAGS_TOUCH_EVENTS_DESCRIPTION, kOsDesktop,
-     MULTI_VALUE_TYPE(kTouchEventsChoices)},
+     MULTI_VALUE_TYPE(kTouchEventFeatureDetectionChoices)},
     {"disable-touch-adjustment", IDS_FLAGS_TOUCH_ADJUSTMENT_NAME,
      IDS_FLAGS_TOUCH_ADJUSTMENT_DESCRIPTION,
      kOsWin | kOsLinux | kOsCrOS | kOsAndroid,
@@ -1882,10 +1903,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(content::kWebRtcH264WithOpenH264FFmpeg)},
 #endif  // ENABLE_WEBRTC && BUILDFLAG(RTC_USE_H264) && !MEDIA_DISABLE_FFMPEG
 #if defined(OS_ANDROID)
-    {"ime-thread", IDS_FLAGS_IME_THREAD_NAME, IDS_FLAGS_IME_THREAD_DESCRIPTION,
-     kOsAndroid, FEATURE_VALUE_TYPE(features::kImeThread)},
-#endif  // OS_ANDROID
-#if defined(OS_ANDROID)
     {"offline-pages-ntp", IDS_FLAGS_NTP_OFFLINE_PAGES_NAME,
      IDS_FLAGS_NTP_OFFLINE_PAGES_DESCRIPTION, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kNTPOfflinePagesFeature)},
@@ -2122,6 +2139,11 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_COMPONENT_FLASH_ONLY_DESCRIPTION, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kComponentFlashOnly)},
 #endif
+    {"enable-nostate-prefetch", IDS_FLAGS_NOSTATE_PREFETCH,
+     IDS_FLAGS_NOSTATE_PREFETCH_DESCRIPTION, kOsAll,
+     FEATURE_WITH_VARIATIONS_VALUE_TYPE(prerender::kNoStatePrefetchFeature,
+                                        kNoStatePrefetchFeatureVariations,
+                                        "NoStatePrefetchValidation")},
 
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in

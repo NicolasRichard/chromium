@@ -38,6 +38,7 @@
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace content {
 namespace {
@@ -78,7 +79,7 @@ class TestResourceDispatcher : public ResourceDispatcher {
       std::unique_ptr<ResourceRequest> request,
       int routing_id,
       scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner,
-      const GURL& frame_origin,
+      const url::Origin& frame_origin,
       std::unique_ptr<RequestPeer> peer,
       blink::WebURLRequest::LoadingIPCType ipc_type,
       mojom::URLLoaderFactory* url_loader_factory,
@@ -178,9 +179,7 @@ class TestWebURLLoaderClient : public blink::WebURLLoaderClient {
     EXPECT_TRUE(loader_);
   }
 
-  void didReceiveData(const char* data,
-                      int dataLength,
-                      int encodedDataLength) override {
+  void didReceiveData(const char* data, int dataLength) override {
     EXPECT_TRUE(loader_);
     // The response should have started, but must not have finished, or failed.
     EXPECT_TRUE(did_receive_response_);
@@ -317,7 +316,7 @@ class WebURLLoaderImplTest : public testing::Test {
     EXPECT_EQ("", client()->received_data());
     auto size = strlen(kTestData);
     peer()->OnReceivedData(
-        base::MakeUnique<FixedReceivedData>(kTestData, size, size));
+        base::MakeUnique<FixedReceivedData>(kTestData, size));
     EXPECT_EQ(kTestData, client()->received_data());
   }
 
@@ -351,7 +350,7 @@ class WebURLLoaderImplTest : public testing::Test {
   void DoReceiveDataFtp() {
     auto size = strlen(kFtpDirListing);
     peer()->OnReceivedData(
-        base::MakeUnique<FixedReceivedData>(kFtpDirListing, size, size));
+        base::MakeUnique<FixedReceivedData>(kFtpDirListing, size));
     // The FTP delegate should modify the data the client sees.
     EXPECT_NE(kFtpDirListing, client()->received_data());
   }

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_QUIC_CRYPTO_CRYPTO_SECRET_BOXER_H_
-#define NET_QUIC_CRYPTO_CRYPTO_SECRET_BOXER_H_
+#ifndef NET_QUIC_CORE_CRYPTO_CRYPTO_SECRET_BOXER_H_
+#define NET_QUIC_CORE_CRYPTO_CRYPTO_SECRET_BOXER_H_
 
 #include <stddef.h>
 
@@ -13,7 +13,7 @@
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
 #include "base/synchronization/lock.h"
-#include "net/base/net_export.h"
+#include "net/quic/platform/api/quic_export.h"
 
 namespace net {
 
@@ -22,7 +22,7 @@ class QuicRandom;
 // CryptoSecretBoxer encrypts small chunks of plaintext (called 'boxing') and
 // then, later, can authenticate+decrypt the resulting boxes. This object is
 // thread-safe.
-class NET_EXPORT_PRIVATE CryptoSecretBoxer {
+class QUIC_EXPORT_PRIVATE CryptoSecretBoxer {
  public:
   CryptoSecretBoxer();
   ~CryptoSecretBoxer();
@@ -60,4 +60,4 @@ class NET_EXPORT_PRIVATE CryptoSecretBoxer {
 
 }  // namespace net
 
-#endif  // NET_QUIC_CRYPTO_CRYPTO_SECRET_BOXER_H_
+#endif  // NET_QUIC_CORE_CRYPTO_CRYPTO_SECRET_BOXER_H_

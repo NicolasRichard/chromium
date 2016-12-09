@@ -21,7 +21,7 @@ class InheritedTranslateChecker : public InterpolationType::ConversionChecker {
 
   static std::unique_ptr<InheritedTranslateChecker> create(
       PassRefPtr<TranslateTransformOperation> inheritedTranslate) {
-    return wrapUnique(
+    return WTF::wrapUnique(
         new InheritedTranslateChecker(std::move(inheritedTranslate)));
   }
 
@@ -102,7 +102,7 @@ InterpolationValue CSSTranslateInterpolationType::maybeConvertInherit(
     ConversionCheckers& conversionCheckers) const {
   TranslateTransformOperation* inheritedTranslate =
       state.parentStyle()->translate();
-  conversionCheckers.append(
+  conversionCheckers.push_back(
       InheritedTranslateChecker::create(inheritedTranslate));
   return convertTranslateOperation(inheritedTranslate,
                                    state.parentStyle()->effectiveZoom());

@@ -100,7 +100,8 @@ class UnderlyingSideNumbersChecker
  public:
   static std::unique_ptr<UnderlyingSideNumbersChecker> create(
       const SideNumbers& underlyingSideNumbers) {
-    return wrapUnique(new UnderlyingSideNumbersChecker(underlyingSideNumbers));
+    return WTF::wrapUnique(
+        new UnderlyingSideNumbersChecker(underlyingSideNumbers));
   }
 
   static SideNumbers getUnderlyingSideNumbers(
@@ -128,7 +129,7 @@ class InheritedSideNumbersChecker
   static std::unique_ptr<InheritedSideNumbersChecker> create(
       CSSPropertyID property,
       const SideNumbers& inheritedSideNumbers) {
-    return wrapUnique(
+    return WTF::wrapUnique(
         new InheritedSideNumbersChecker(property, inheritedSideNumbers));
   }
 
@@ -187,7 +188,7 @@ CSSBorderImageLengthBoxInterpolationType::maybeConvertNeutral(
     ConversionCheckers& conversionCheckers) const {
   SideNumbers underlyingSideNumbers =
       UnderlyingSideNumbersChecker::getUnderlyingSideNumbers(underlying);
-  conversionCheckers.append(
+  conversionCheckers.push_back(
       UnderlyingSideNumbersChecker::create(underlyingSideNumbers));
   const auto& zero = [&underlyingSideNumbers](size_t index) {
     return underlyingSideNumbers.isNumber[index]
@@ -216,7 +217,7 @@ CSSBorderImageLengthBoxInterpolationType::maybeConvertInherit(
   const BorderImageLengthBox& inherited =
       BorderImageLengthBoxPropertyFunctions::getBorderImageLengthBox(
           cssProperty(), *state.parentStyle());
-  conversionCheckers.append(InheritedSideNumbersChecker::create(
+  conversionCheckers.push_back(InheritedSideNumbersChecker::create(
       cssProperty(), SideNumbers(inherited)));
   return convertBorderImageLengthBox(inherited,
                                      state.parentStyle()->effectiveZoom());

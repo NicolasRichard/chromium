@@ -208,6 +208,7 @@
 #include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "third_party/WebKit/public/web/WebWidget.h"
+#include "ui/events/base_event_utils.h"
 #include "url/origin.h"
 #include "url/url_constants.h"
 #include "url/url_util.h"
@@ -2080,8 +2081,6 @@ void RenderFrameImpl::OnVisualStateRequest(uint64_t id) {
 
 void RenderFrameImpl::OnSetEditableSelectionOffsets(int start, int end) {
   base::AutoReset<bool> handling_select_range(&handling_select_range_, true);
-  if (!GetRenderWidget()->ShouldHandleImeEvent())
-    return;
   ImeEventGuard guard(GetRenderWidget());
   frame_->setEditableSelectionOffsets(start, end);
 }
@@ -2089,8 +2088,6 @@ void RenderFrameImpl::OnSetEditableSelectionOffsets(int start, int end) {
 void RenderFrameImpl::OnSetCompositionFromExistingText(
     int start, int end,
     const std::vector<blink::WebCompositionUnderline>& underlines) {
-  if (!GetRenderWidget()->ShouldHandleImeEvent())
-    return;
   ImeEventGuard guard(GetRenderWidget());
   frame_->setCompositionFromExistingText(start, end, underlines);
 }
@@ -2100,17 +2097,11 @@ void RenderFrameImpl::OnExecuteNoValueEditCommand(const std::string& name) {
 }
 
 void RenderFrameImpl::OnExtendSelectionAndDelete(int before, int after) {
-  if (!GetRenderWidget()->ShouldHandleImeEvent())
-    return;
-
   ImeEventGuard guard(GetRenderWidget());
   frame_->extendSelectionAndDelete(before, after);
 }
 
 void RenderFrameImpl::OnDeleteSurroundingText(int before, int after) {
-  if (!GetRenderWidget()->ShouldHandleImeEvent())
-    return;
-
   ImeEventGuard guard(GetRenderWidget());
   frame_->deleteSurroundingText(before, after);
 }
@@ -4249,7 +4240,7 @@ void RenderFrameImpl::willSendRequest(blink::WebLocalFrame* frame,
   extra_data->set_render_frame_id(routing_id_);
   extra_data->set_is_main_frame(!parent);
   extra_data->set_frame_origin(
-      url::Origin(frame->document().getSecurityOrigin()).GetURL());
+      url::Origin(frame->document().getSecurityOrigin()));
   extra_data->set_parent_is_main_frame(parent && !parent->parent());
   extra_data->set_parent_render_frame_id(parent_routing_id);
   extra_data->set_allow_download(
@@ -6047,8 +6038,8 @@ WebMediaPlayer* RenderFrameImpl::CreateWebMediaPlayerForMediaStream(
   return new WebMediaPlayerMS(
       frame_, client, GetWebMediaPlayerDelegate()->AsWeakPtr(),
       new RenderMediaLog(url::Origin(security_origin).GetURL()),
-      CreateRendererFactory(), compositor_task_runner,
-      render_thread->GetMediaThreadTaskRunner(),
+      CreateRendererFactory(), render_thread->GetIOTaskRunner(),
+      compositor_task_runner, render_thread->GetMediaThreadTaskRunner(),
       render_thread->GetWorkerTaskRunner(), render_thread->GetGpuFactories(),
       sink_id, security_origin);
 #else
@@ -6482,7 +6473,8 @@ void RenderFrameImpl::HandlePepperImeCommit(const base::string16& text) {
     while (iterator.Advance()) {
       blink::WebKeyboardEvent char_event;
       char_event.type = blink::WebInputEvent::Char;
-      char_event.timeStampSeconds = base::Time::Now().ToDoubleT();
+      char_event.timeStampSeconds =
+          ui::EventTimeStampToSeconds(ui::EventTimeForNow());
       char_event.modifiers = 0;
       char_event.windowsKeyCode = text[i];
       char_event.nativeKeyCode = text[i];

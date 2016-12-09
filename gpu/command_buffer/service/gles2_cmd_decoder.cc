@@ -4803,6 +4803,10 @@ void GLES2DecoderImpl::Destroy(bool have_context) {
   offscreen_resolved_frame_buffer_.reset();
   offscreen_resolved_color_texture_.reset();
 
+  // Release all fences now, because some fence types need the context to be
+  // current on destruction.
+  pending_readpixel_fences_ = std::queue<FenceCallback>();
+
   // Need to release these before releasing |group_| which may own the
   // ShaderTranslatorCache.
   fragment_translator_ = NULL;
@@ -6149,24 +6153,23 @@ void GLES2DecoderImpl::DoGenerateMipmap(GLenum target) {
     enable_srgb =
         GetColorEncodingFromInternalFormat(internal_format) == GL_SRGB;
   }
-  if (!enable_srgb || !feature_info_->feature_flags().desktop_srgb_support ||
-      !workarounds().decode_encode_srgb_for_generatemipmap) {
-    if (feature_info_->feature_flags().desktop_srgb_support) {
-      state_.EnableDisableFramebufferSRGB(enable_srgb);
-    }
-    glGenerateMipmapEXT(target);
-  } else {
+  if (enable_srgb && feature_info_->feature_flags().desktop_srgb_support) {
+    state_.EnableDisableFramebufferSRGB(enable_srgb);
+  }
+  if (enable_srgb && workarounds().decode_encode_srgb_for_generatemipmap) {
     if (target == GL_TEXTURE_2D) {
-      state_.EnableDisableFramebufferSRGB(true);
       if (!InitializeSRGBConverter("generateMipmap")) {
         return;
       }
       srgb_converter_->GenerateMipmap(this, tex, target);
     } else {
-      // TODO(yizhou): If the target is GL_TEXTURE_3D or GL_TEXTURE_2D_ARRAY,
+      // TODO(yizhou): If the target is GL_TEXTURE_3D ,GL_TEXTURE_2D_ARRAY,
+      // GL_TEXTURE_CUBE_MAP,
       // this change can not generate correct mipmap.
       glGenerateMipmapEXT(target);
     }
+  } else {
+    glGenerateMipmapEXT(target);
   }
 
   if (texture_zero_level_set) {
