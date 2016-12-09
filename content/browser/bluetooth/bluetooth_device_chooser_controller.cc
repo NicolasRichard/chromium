@@ -30,19 +30,18 @@ using UUIDSet = device::BluetoothDevice::UUIDSet;
 
 namespace {
 
+// Signal Strength Display Notes:
+//
 // RSSI values are displayed by the chooser to empower a user to differentiate
-// between multiple devices with the same name. Comparing devices with different
-// names is not a goal. It is important that a user be able to move away from a
-// device and have it transition between two different signal strength levels.
+// between multiple devices with the same name, comparing devices with different
+// names is a secondary goal. It is important that a user be able to move closer
+// and farther away from a device and have it transition between two different
+// signal strength levels, thus we want to spread RSSI values out accross
+// displayed levels.
 //
-// RSSI thresholds used to convert to displayed levels are determined from real
-// world values collected via UMA in RecordRSSISignalStrength. They are selected
-// to span the range of encountered values, and avoid too many devices
-// saturating the strongest signal level displayed.
-//
-// Measured RSSI values from UMA are charted here:
+// RSSI values from UMA in RecordRSSISignalStrength are charted here:
 // https://goo.gl/photos/pCoAkF7mPyza9B1k7 (2016-12-08)
-// and copy-paste of table summarized roughly as:
+// with a copy-paste of table data at every 5dBm:
 //  dBm   CDF* Histogram Bucket Quantity (hand drawn estimate)
 // -100 00.0%  -
 //  -95 00.4%  --
@@ -65,39 +64,11 @@ namespace {
 // https://en.wikipedia.org/wiki/Cumulative_distribution_function
 //
 // Conversion to signal strengths is done by selecting 4 threshold points
-// equally spaced through the CDF. This results in roughly distributing
-// devices evenly between the displayed levels.
-//
-// To avoid saturating at the highest level, the highest level is made
-// to be 1/2 the size of all the others. This reduces the number of devices
-// expected in the strongest signal level, helping achieve the goal of
-// ensuring high power devices do not saturate the displayed signal and can be
-// tested by moving closer and farther away.
-//
-// [ level 0 ][ level 1 ][ level 2 ][ level 3 ][ l.4 ]
-// [    2    ][    2    ][    2    ][    2    ][  1  ]   Sizes of levels.
-// 0%        22%        44%        66%        88%   100% Percentages of devices.
-//
-// Number of RSSI levels used in the signal strength image.
-const int kNumSignalStrengthLevels = 5;
-// RSSI thresholds corresponding to Cumulative Distribution of devices.
-const int k22thPercentileRSSI = -70;
-const int k44thPercentileRSSI = -61;
-const int k66thPercentileRSSI = -52;
-const int k88thPercentileRSSI = -44;
-
-// The threshold ~100% of RSSI values are expected to fall below. Larger values
-// are clamped to the maximum displayed level, but reported in UMA as having
-// fallen outside of range. This value is derived because there is no crisp
-// limit that defines
-const content::UMARSSISignalStrengthLevel kRSSISignalStrengthEnumTable[] = {
-    content::UMARSSISignalStrengthLevel::LEVEL_0,
-    content::UMARSSISignalStrengthLevel::LEVEL_1,
-    content::UMARSSISignalStrengthLevel::LEVEL_2,
-    content::UMARSSISignalStrengthLevel::LEVEL_3,
-    content::UMARSSISignalStrengthLevel::LEVEL_4};
-
-}  // namespace
+// equally spaced through the CDF.
+const int k20thPercentileRSSI = -71;
+const int k40thPercentileRSSI = -63;
+const int k60thPercentileRSSI = -55;
+const int k80thPercentileRSSI = -47;
 
 namespace content {
 
@@ -489,22 +460,22 @@ int BluetoothDeviceChooserController::CalculateSignalStrengthLevel(
     int8_t rssi) {
   RecordRSSISignalStrength(rssi);
 
-  int level;
-  if (rssi < k22thPercentileRSSI) {
-    level = 0;
-  } else if (rssi < k44thPercentileRSSI) {
-    level = 1;
-  } else if (rssi < k66thPercentileRSSI) {
-    level = 2;
-  } else if (rssi < k88thPercentileRSSI) {
-    level = 3;
+  if (rssi < k20thPercentileRSSI) {
+    RecordRSSISignalStrengthLevel(content::UMARSSISignalStrengthLevel::LEVEL_0);
+    return 0;
+  } else if (rssi < k40thPercentileRSSI) {
+    RecordRSSISignalStrengthLevel(content::UMARSSISignalStrengthLevel::LEVEL_1);
+    return 1;
+  } else if (rssi < k60thPercentileRSSI) {
+    RecordRSSISignalStrengthLevel(content::UMARSSISignalStrengthLevel::LEVEL_2);
+    return 2;
+  } else if (rssi < k80thPercentileRSSI) {
+    RecordRSSISignalStrengthLevel(content::UMARSSISignalStrengthLevel::LEVEL_3);
+    return 3;
   } else {
-    level = 4;
+    RecordRSSISignalStrengthLevel(content::UMARSSISignalStrengthLevel::LEVEL_4);
+    return 4;
   }
-
-  DCHECK(kNumSignalStrengthLevels == arraysize(kRSSISignalStrengthEnumTable));
-  RecordRSSISignalStrengthLevel(kRSSISignalStrengthEnumTable[level]);
-  return level;
 }
 
 void BluetoothDeviceChooserController::SetTestScanDurationForTesting() {
