@@ -34,9 +34,9 @@ namespace {
 //
 // RSSI values are displayed by the chooser to empower a user to differentiate
 // between multiple devices with the same name, comparing devices with different
-// names is a secondary goal. It is important that a user be able to move closer
+// names is a secondary goal. It is important that a user is able to move closer
 // and farther away from a device and have it transition between two different
-// signal strength levels, thus we want to spread RSSI values out accross
+// signal strength levels, thus we want to spread RSSI values out evenly accross
 // displayed levels.
 //
 // RSSI values from UMA in RecordRSSISignalStrength are charted here:
