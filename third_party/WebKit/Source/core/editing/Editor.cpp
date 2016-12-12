@@ -62,7 +62,7 @@
 #include "core/events/KeyboardEvent.h"
 #include "core/events/ScopedEventQueue.h"
 #include "core/events/TextEvent.h"
-#include "core/fetch/ImageResource.h"
+#include "core/fetch/ImageResourceContent.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
@@ -480,16 +480,17 @@ static PassRefPtr<Image> imageFromNode(const Node& node) {
   if (!layoutObject)
     return nullptr;
 
-  if (layoutObject->isCanvas())
-    return toHTMLCanvasElement(node).copiedImage(FrontBuffer,
-                                                 PreferNoAcceleration);
+  if (layoutObject->isCanvas()) {
+    return toHTMLCanvasElement(node).copiedImage(
+        FrontBuffer, PreferNoAcceleration, SnapshotReasonCopyToClipboard);
+  }
 
   if (layoutObject->isImage()) {
     LayoutImage* layoutImage = toLayoutImage(layoutObject);
     if (!layoutImage)
       return nullptr;
 
-    ImageResource* cachedImage = layoutImage->cachedImage();
+    ImageResourceContent* cachedImage = layoutImage->cachedImage();
     if (!cachedImage || cachedImage->errorOccurred())
       return nullptr;
     return cachedImage->getImage();

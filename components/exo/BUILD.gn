@@ -9,6 +9,10 @@ source_set("exo") {
   sources = [
     "buffer.cc",
     "buffer.h",
+    "compositor_frame_sink.cc",
+    "compositor_frame_sink.h",
+    "compositor_frame_sink_holder.cc",
+    "compositor_frame_sink_holder.h",
     "display.cc",
     "display.h",
     "gamepad.cc",
@@ -16,6 +20,7 @@ source_set("exo") {
     "keyboard.cc",
     "keyboard.h",
     "keyboard_delegate.h",
+    "keyboard_device_configuration_delegate.h",
     "notification_surface.cc",
     "notification_surface.h",
     "notification_surface_manager.h",
@@ -58,6 +63,7 @@ source_set("exo") {
     "//ui/aura",
     "//ui/compositor",
     "//ui/display/manager",
+    "//ui/events/devices:devices",
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/gl",
@@ -154,6 +160,7 @@ test("exo_unittests") {
     "//base",
     "//base/test:test_support",
     "//device/gamepad:test_helpers",
+    "//mojo/edk/embedder:headers",
   ]
 
   data_deps = [

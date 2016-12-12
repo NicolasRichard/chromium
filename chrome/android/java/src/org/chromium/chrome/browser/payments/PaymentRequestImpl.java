@@ -70,9 +70,11 @@ import javax.annotation.Nullable;
  * Android implementation of the PaymentRequest service defined in
  * components/payments/payment_request.mojom.
  */
-public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Client,
-        PaymentApp.InstrumentsCallback, PaymentInstrument.InstrumentDetailsCallback,
-        PaymentResponseHelper.PaymentResponseRequesterDelegate, FocusChangedObserver {
+public class PaymentRequestImpl
+        implements PaymentRequest, PaymentRequestUI.Client, PaymentApp.InstrumentsCallback,
+                   PaymentInstrument.InstrumentDetailsCallback,
+                   PaymentAppFactory.PaymentAppCreatedCallback,
+                   PaymentResponseHelper.PaymentResponseRequesterDelegate, FocusChangedObserver {
     /**
      * A test-only observer for the PaymentRequest service implementation.
      */
@@ -202,7 +204,6 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
     private final ChromeActivity mContext;
     private final String mMerchantName;
     private final String mOrigin;
-    private final List<PaymentApp> mApps;
     private final AddressEditor mAddressEditor;
     private final CardEditor mCardEditor;
     private final PaymentRequestJourneyLogger mJourneyLogger = new PaymentRequestJourneyLogger();
@@ -244,6 +245,8 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
     private Map<String, PaymentMethodData> mMethodData;
     private SectionInformation mShippingAddressesSection;
     private SectionInformation mContactSection;
+    private List<PaymentApp> mApps;
+    private boolean mAllAppsCreated;
     private List<PaymentApp> mPendingApps;
     private List<PaymentInstrument> mPendingInstruments;
     private List<PaymentInstrument> mPendingAutofillInstruments;
@@ -298,7 +301,8 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
                     }
                 });
 
-        mApps = PaymentAppFactory.create(mContext, webContents);
+        mApps = new ArrayList<>();
+        PaymentAppFactory.getInstance().create(mContext, webContents, this);
 
         mAddressEditor = new AddressEditor();
         mCardEditor = new CardEditor(webContents, mAddressEditor, sObserverForTest);
@@ -517,8 +521,20 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         return Collections.unmodifiableMap(result);
     }
 
+    @Override
+    public void onPaymentAppCreated(PaymentApp paymentApp) {
+        mApps.add(paymentApp);
+    }
+
+    @Override
+    public void onAllPaymentAppsCreated() {
+        mAllAppsCreated = true;
+        getMatchingPaymentInstruments();
+    }
+
     /** Queries the installed payment apps for their instruments that merchant supports. */
     private void getMatchingPaymentInstruments() {
+        if (!mAllAppsCreated || mClient == null || mPendingApps != null) return;
         mPendingApps = new ArrayList<>(mApps);
         mPendingInstruments = new ArrayList<>();
         mPendingAutofillInstruments = new ArrayList<>();
@@ -902,19 +918,22 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         }
         mAddressEditor.edit(toEdit, new Callback<AutofillAddress>() {
             @Override
-            public void onResult(AutofillAddress completeAddress) {
+            public void onResult(AutofillAddress editedAddress) {
                 if (mUI == null) return;
 
-                if (completeAddress == null) {
-                    mShippingAddressesSection.setSelectedItemIndex(SectionInformation.NO_SELECTION);
+                // |editedAddress| could be null if something went wrong or user was adding a new
+                // address and cancelled out.
+                if (editedAddress == null) {
                     providePaymentInformation();
                 } else {
                     // Set the shipping address label.
-                    completeAddress.setShippingAddressLabelWithCountry();
+                    editedAddress.setShippingAddressLabelWithCountry();
 
-                    if (toEdit == null) mShippingAddressesSection.addAndSelectItem(completeAddress);
-                    mCardEditor.updateBillingAddressIfComplete(completeAddress);
-                    mClient.onShippingAddressChange(completeAddress.toPaymentAddress());
+                    // We add a new item if the user was in the "add" flow and the result in
+                    // |editedAddress| is non-null.
+                    if (toEdit == null) mShippingAddressesSection.addAndSelectItem(editedAddress);
+                    mCardEditor.updateBillingAddressIfComplete(editedAddress);
+                    mClient.onShippingAddressChange(editedAddress.toPaymentAddress());
                 }
             }
         });
@@ -928,13 +947,15 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         }
         mContactEditor.edit(toEdit, new Callback<AutofillContact>() {
             @Override
-            public void onResult(AutofillContact completeContact) {
+            public void onResult(AutofillContact editedContact) {
                 if (mUI == null) return;
 
-                if (completeContact == null) {
-                    mContactSection.setSelectedItemIndex(SectionInformation.NO_SELECTION);
-                } else if (toEdit == null) {
-                    mContactSection.addAndSelectItem(completeContact);
+                // |editedContact| could be null if something went wrong or user was adding a
+                // contact and cancelled out of that flow. In the following block we add an item to
+                // the list if we were in the "add" flow, and the result in |editedContact| is
+                // non-null.
+                if (toEdit == null && editedContact != null) {
+                    mContactSection.addAndSelectItem(editedContact);
                 }
 
                 mUI.updateSection(PaymentRequestUI.TYPE_CONTACT_DETAILS, mContactSection);
@@ -950,13 +971,14 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         }
         mCardEditor.edit(toEdit, new Callback<AutofillPaymentInstrument>() {
             @Override
-            public void onResult(AutofillPaymentInstrument completeCard) {
+            public void onResult(AutofillPaymentInstrument editedCard) {
                 if (mUI == null) return;
 
-                if (completeCard == null) {
-                    mPaymentMethodsSection.setSelectedItemIndex(SectionInformation.NO_SELECTION);
-                } else if (toEdit == null) {
-                    mPaymentMethodsSection.addAndSelectItem(completeCard);
+                // |editedCard| could be null if something went wrong or user was adding a card
+                // and cancelled out of that flow. In the following block we add an item to the list
+                // if we were in the "add" flow and the result in |editedCard| is non-null.
+                if (toEdit == null && editedCard != null) {
+                    mPaymentMethodsSection.addAndSelectItem(editedCard);
                 }
 
                 updateInstrumentModifiedTotals();
@@ -1202,15 +1224,18 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
      * @return True if no payment methods are supported
      */
     private boolean disconnectIfNoPaymentMethodsSupported() {
-        boolean waitingForPaymentApps = !mPendingApps.isEmpty() || !mPendingInstruments.isEmpty();
+        if (mPendingApps == null || !mPendingApps.isEmpty() || !mPendingInstruments.isEmpty()) {
+            // Waiting for pending apps and instruments.
+            return false;
+        }
+
         boolean foundPaymentMethods = mPaymentMethodsSection != null
                 && !mPaymentMethodsSection.isEmpty();
         boolean userCanAddCreditCard = mMerchantSupportsAutofillPaymentInstruments
                 && !ChromeFeatureList.isEnabled(ChromeFeatureList.NO_CREDIT_CARD_ABORT);
 
         if (!mArePaymentMethodsSupported
-                || (getIsShowing() && !waitingForPaymentApps && !foundPaymentMethods
-                        && !userCanAddCreditCard)) {
+                || (getIsShowing() && !foundPaymentMethods && !userCanAddCreditCard)) {
             // All payment apps have responded, but none of them have instruments. It's possible to
             // add credit cards, but the merchant does not support them either. The payment request
             // must be rejected.

@@ -419,15 +419,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac', 'amd'], bug=645298)
 
     # Mac Pro with AMD GPU
-    self.Fail('conformance2/textures/misc/tex-mipmap-levels.html',
-        ['mac', ('amd', 0x679e)], bug=483282)
     self.Flaky('deqp/functional/gles3/shaderindexing/mat_01.html',
         ['mac', ('amd', 0x679e)], bug=636648)
     self.Flaky('deqp/functional/gles3/shaderindexing/tmp.html',
         ['mac', ('amd', 0x679e)], bug=659871)
-    self.Fail('deqp/functional/gles3/shadertexturefunction/' +
-        'texturesize.html',
-        ['mac', ('amd', 0x679e)], bug=640506)
     self.Fail('deqp/functional/gles3/uniformbuffers/random.html',
         ['mac', ('amd', 0x679e)], bug=618464)
     self.Fail('deqp/functional/gles3/shaderoperator/common_functions.html',
@@ -789,9 +784,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'amd'], bug=633022)
     self.Fail('conformance2/rendering/blitframebuffer-filter-outofbounds.html',
         ['linux', 'amd'], bug=655147)
-
-    self.Fail('conformance2/textures/misc/tex-srgb-mipmap.html',
-        ['linux', 'amd'], bug=634519) # WebGL 2.0.1
 
     # Uniform buffer related failures
     self.Fail('deqp/functional/gles3/uniformbuffers/single_struct_array.html',

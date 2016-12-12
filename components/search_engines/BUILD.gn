@@ -83,7 +83,7 @@ static_library("search_engines") {
     "//url",
   ]
 
-  if (enable_configuration_policy) {
+  if (!is_ios) {
     sources += [
       "default_search_policy_handler.cc",
       "default_search_policy_handler.h",
@@ -128,7 +128,7 @@ source_set("unit_tests") {
     "//base",
     "//base/test:test_support",
     "//components/google/core/browser",
-    "//components/pref_registry:test_support",
+    "//components/pref_registry:pref_registry",
     "//components/prefs",
     "//components/sync:test_support_driver",
     "//components/sync:test_support_model",
@@ -140,7 +140,7 @@ source_set("unit_tests") {
     "//url",
   ]
 
-  if (enable_configuration_policy) {
+  if (!is_ios) {
     sources += [ "default_search_policy_handler_unittest.cc" ]
 
     deps += [

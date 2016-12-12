@@ -135,8 +135,6 @@ extern const base::Feature kQuickUnlockPin;
 extern const base::Feature kEHVInputOnImeMenu;
 
 extern const base::Feature kCrosCompUpdates;
-
-extern const base::Feature kComponentFlashOnly;
 #endif  // defined(OS_CHROMEOS)
 
 // DON'T ADD RANDOM STUFF HERE. Put it in the main section above in

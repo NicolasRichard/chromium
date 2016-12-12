@@ -7,7 +7,7 @@
 #include "core/dom/DOMException.h"
 #include "core/dom/DOMRect.h"
 #include "core/dom/Document.h"
-#include "core/fetch/ImageResource.h"
+#include "core/fetch/ImageResourceContent.h"
 #include "core/frame/ImageBitmap.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLImageElement.h"
@@ -109,7 +109,9 @@ ScriptPromise ShapeDetector::detect(ScriptState* scriptState,
   uint8_t* pixelDataPtr = nullptr;
   WTF::CheckedNumeric<int> allocationSize = 0;
 
-  sk_sp<SkImage> skImage = image->imageForCurrentFrame();
+  // TODO(ccameron): ShapeDetector can ignore color conversion.
+  sk_sp<SkImage> skImage =
+      image->imageForCurrentFrame(ColorBehavior::transformToGlobalTarget());
   // Use |skImage|'s pixels if it has direct access to them.
   if (skImage->peekPixels(&pixmap)) {
     pixelDataPtr = static_cast<uint8_t*>(pixmap.writable_addr());
@@ -149,7 +151,7 @@ ScriptPromise ShapeDetector::detectShapesOnImageElement(
     return promise;
   }
 
-  ImageResource* const imageResource = img->cachedImage();
+  ImageResourceContent* const imageResource = img->cachedImage();
   if (!imageResource || imageResource->errorOccurred()) {
     resolver->reject(DOMException::create(
         InvalidStateError, "Failed to load or decode HTMLImageElement."));
@@ -163,7 +165,9 @@ ScriptPromise ShapeDetector::detectShapesOnImageElement(
     return promise;
   }
 
-  const sk_sp<SkImage> image = blinkImage->imageForCurrentFrame();
+  // TODO(ccameron): ShapeDetector can ignore color conversion.
+  const sk_sp<SkImage> image = blinkImage->imageForCurrentFrame(
+      ColorBehavior::transformToGlobalTarget());
   DCHECK_EQ(img->naturalWidth(), static_cast<unsigned>(image->width()));
   DCHECK_EQ(img->naturalHeight(), static_cast<unsigned>(image->height()));
 

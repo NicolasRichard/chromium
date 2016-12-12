@@ -262,7 +262,10 @@ void SVGImage::drawForContainer(SkCanvas* canvas,
                ClampImageToSourceRect, url);
 }
 
-sk_sp<SkImage> SVGImage::imageForCurrentFrame() {
+sk_sp<SkImage> SVGImage::imageForCurrentFrame(
+    const ColorBehavior& colorBehavior) {
+  // TODO(ccameron): This function should not ignore |colorBehavior|.
+  // https://crbug.com/667431
   return imageForCurrentFrameForContainer(KURL(), size());
 }
 
@@ -342,7 +345,10 @@ void SVGImage::draw(SkCanvas* canvas,
                     const FloatRect& dstRect,
                     const FloatRect& srcRect,
                     RespectImageOrientationEnum shouldRespectImageOrientation,
-                    ImageClampingMode clampMode) {
+                    ImageClampingMode clampMode,
+                    const ColorBehavior& colorBehavior) {
+  // TODO(ccameron): This function should not ignore |colorBehavior|.
+  // https://crbug.com/667431
   if (!m_page)
     return;
 
@@ -484,8 +490,9 @@ void SVGImage::serviceAnimations(double monotonicAnimationStartTime) {
   ScriptForbiddenScope forbidScript;
 
   // The calls below may trigger GCs, so set up the required persistent
-  // reference on the ImageResource which owns this SVGImage. By transitivity,
-  // that will keep the associated SVGImageChromeClient object alive.
+  // reference on the ImageResourceContent which owns this SVGImage. By
+  // transitivity, that will keep the associated SVGImageChromeClient object
+  // alive.
   Persistent<ImageObserver> protect(getImageObserver());
   m_page->animator().serviceScriptedAnimations(monotonicAnimationStartTime);
   // Do *not* update the paint phase. It's critical to paint only when

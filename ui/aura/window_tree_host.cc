@@ -66,14 +66,6 @@ void WindowTreeHost::InitHost() {
   window()->Show();
 }
 
-void WindowTreeHost::InitCompositor() {
-  compositor_->SetScaleAndSize(GetDeviceScaleFactorFromDisplay(window()),
-                               GetBoundsInPixels().size());
-  compositor_->SetRootLayer(window()->layer());
-  compositor_->SetDisplayColorSpace(
-      GetICCProfileForCurrentDisplay().GetColorSpace());
-}
-
 void WindowTreeHost::AddObserver(WindowTreeHostObserver* observer) {
   observers_.AddObserver(observer);
 }
@@ -209,8 +201,11 @@ ui::EventDispatchDetails WindowTreeHost::DispatchKeyEventPostIME(
 }
 
 void WindowTreeHost::Show() {
-  if (compositor())
-    compositor()->SetVisible(true);
+  // Ensure that compositor has been properly initialized, see InitCompositor()
+  // and InitHost().
+  DCHECK(compositor());
+  DCHECK_EQ(compositor()->root_layer(), window()->layer());
+  compositor()->SetVisible(true);
   ShowImpl();
 }
 
@@ -264,6 +259,14 @@ void WindowTreeHost::CreateCompositor() {
         std::unique_ptr<ui::EventTargeter>(new WindowTargeter()));
     dispatcher_.reset(new WindowEventDispatcher(this));
   }
+}
+
+void WindowTreeHost::InitCompositor() {
+  compositor_->SetScaleAndSize(GetDeviceScaleFactorFromDisplay(window()),
+                               GetBoundsInPixels().size());
+  compositor_->SetRootLayer(window()->layer());
+  compositor_->SetDisplayColorSpace(
+      GetICCProfileForCurrentDisplay().GetColorSpace());
 }
 
 void WindowTreeHost::OnAcceleratedWidgetAvailable() {

@@ -34,7 +34,6 @@
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMTypedArray.h"
 #include "core/dom/FlexibleArrayBufferView.h"
-#include "core/fetch/ImageResource.h"
 #include "core/frame/ImageBitmap.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
@@ -773,10 +772,13 @@ ImageData* WebGLRenderingContextBase::toImageData(SnapshotReason reason) const {
   // TODO: Furnish toImageData in webgl renderingcontext for jpeg and webp
   // images. See crbug.com/657531.
   ImageData* imageData = nullptr;
+  // TODO(ccameron): WebGL should produce sRGB images.
+  // https://crbug.com/672299
   if (this->drawingBuffer()) {
-    sk_sp<SkImage> snapshot = this->drawingBuffer()
-                                  ->transferToStaticBitmapImage()
-                                  ->imageForCurrentFrame();
+    sk_sp<SkImage> snapshot =
+        this->drawingBuffer()
+            ->transferToStaticBitmapImage()
+            ->imageForCurrentFrame(ColorBehavior::transformToGlobalTarget());
     if (snapshot) {
       imageData = ImageData::create(this->getOffscreenCanvas()->size());
       SkImageInfo imageInfo = SkImageInfo::Make(
@@ -4527,8 +4529,11 @@ PassRefPtr<Image> WebGLRenderingContextBase::drawImageIntoBuffer(
   IntRect srcRect(IntPoint(), image->size());
   IntRect destRect(0, 0, size.width(), size.height());
   SkPaint paint;
+  // TODO(ccameron): WebGL should produce sRGB images.
+  // https://crbug.com/672299
   image->draw(buf->canvas(), paint, destRect, srcRect,
-              DoNotRespectImageOrientation, Image::DoNotClampImageToSourceRect);
+              DoNotRespectImageOrientation, Image::DoNotClampImageToSourceRect,
+              ColorBehavior::transformToGlobalTarget());
   return buf->newImageSnapshot(PreferNoAcceleration,
                                SnapshotReasonWebGLDrawImageIntoBuffer);
 }
@@ -4862,7 +4867,24 @@ bool WebGLRenderingContextBase::canUseTexImageByGPU(
   return true;
 }
 
+SnapshotReason WebGLRenderingContextBase::functionIDToSnapshotReason(
+    TexImageFunctionID id) {
+  switch (id) {
+    case TexImage2D:
+      return SnapshotReasonWebGLTexImage2D;
+    case TexSubImage2D:
+      return SnapshotReasonWebGLTexSubImage2D;
+    case TexImage3D:
+      return SnapshotReasonWebGLTexImage3D;
+    case TexSubImage3D:
+      return SnapshotReasonWebGLTexSubImage3D;
+  }
+  NOTREACHED();
+  return SnapshotReasonUnknown;
+}
+
 void WebGLRenderingContextBase::texImageCanvasByGPU(
+    TexImageFunctionID functionID,
     HTMLCanvasElement* canvas,
     GLuint targetTexture,
     GLenum targetInternalformat,
@@ -4875,9 +4897,10 @@ void WebGLRenderingContextBase::texImageCanvasByGPU(
     ImageBuffer* buffer = canvas->buffer();
     if (buffer &&
         !buffer->copyToPlatformTexture(
-            contextGL(), targetTexture, targetInternalformat, targetType,
-            targetLevel, m_unpackPremultiplyAlpha, m_unpackFlipY,
-            IntPoint(xoffset, yoffset), sourceSubRectangle)) {
+            functionIDToSnapshotReason(functionID), contextGL(), targetTexture,
+            targetInternalformat, targetType, targetLevel,
+            m_unpackPremultiplyAlpha, m_unpackFlipY, IntPoint(xoffset, yoffset),
+            sourceSubRectangle)) {
       NOTREACHED();
     }
   } else {
@@ -4894,7 +4917,7 @@ void WebGLRenderingContextBase::texImageCanvasByGPU(
 }
 
 void WebGLRenderingContextBase::texImageByGPU(
-    TexImageByGPUType functionType,
+    TexImageFunctionID functionID,
     WebGLTexture* texture,
     GLenum target,
     GLint level,
@@ -4916,7 +4939,7 @@ void WebGLRenderingContextBase::texImageByGPU(
   GLenum targetInternalformat = internalformat;
   GLint targetLevel = level;
   bool possibleDirectCopy = false;
-  if (functionType == TexImage2DByGPU) {
+  if (functionID == TexImage2D) {
     possibleDirectCopy = Extensions3DUtil::canUseCopyTextureCHROMIUM(
         target, internalformat, type, level);
   }
@@ -4947,9 +4970,10 @@ void WebGLRenderingContextBase::texImageByGPU(
   }
 
   if (image->isCanvasElement()) {
-    texImageCanvasByGPU(static_cast<HTMLCanvasElement*>(image), targetTexture,
-                        targetInternalformat, targetType, targetLevel,
-                        copyXOffset, copyYOffset, sourceSubRectangle);
+    texImageCanvasByGPU(functionID, static_cast<HTMLCanvasElement*>(image),
+                        targetTexture, targetInternalformat, targetType,
+                        targetLevel, copyXOffset, copyYOffset,
+                        sourceSubRectangle);
   } else {
     texImageBitmapByGPU(static_cast<ImageBitmap*>(image), targetTexture,
                         targetInternalformat, targetType, targetLevel,
@@ -4963,12 +4987,12 @@ void WebGLRenderingContextBase::texImageByGPU(
     contextGL()->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
                                       GL_TEXTURE_2D, targetTexture, 0);
     contextGL()->BindTexture(texture->getTarget(), texture->object());
-    if (functionType == TexImage2DByGPU) {
+    if (functionID == TexImage2D) {
       contextGL()->CopyTexSubImage2D(target, level, 0, 0, 0, 0, width, height);
-    } else if (functionType == TexSubImage2DByGPU) {
+    } else if (functionID == TexSubImage2D) {
       contextGL()->CopyTexSubImage2D(target, level, xoffset, yoffset, 0, 0,
                                      width, height);
-    } else if (functionType == TexSubImage3DByGPU) {
+    } else if (functionID == TexSubImage3D) {
       contextGL()->CopyTexSubImage3D(target, level, xoffset, yoffset, zoffset,
                                      0, 0, width, height);
     }
@@ -5034,7 +5058,10 @@ void WebGLRenderingContextBase::texImageHelperHTMLCanvasElement(
       // 2D canvas has only FrontBuffer.
       texImageImpl(functionID, target, level, internalformat, xoffset, yoffset,
                    zoffset, format, type,
-                   canvas->copiedImage(FrontBuffer, PreferAcceleration).get(),
+                   canvas
+                       ->copiedImage(FrontBuffer, PreferAcceleration,
+                                     functionIDToSnapshotReason(functionID))
+                       .get(),
                    WebGLImageConversion::HtmlDomCanvas, m_unpackFlipY,
                    m_unpackPremultiplyAlpha, sourceSubRectangle, 1, 0);
       return;
@@ -5050,11 +5077,11 @@ void WebGLRenderingContextBase::texImageHelperHTMLCanvasElement(
     if (functionID == TexImage2D) {
       texImage2DBase(target, level, internalformat, sourceSubRectangle.width(),
                      sourceSubRectangle.height(), 0, format, type, 0);
-      texImageByGPU(TexImage2DByGPU, texture, target, level, internalformat,
-                    type, 0, 0, 0, canvas, adjustedSourceSubRectangle);
+      texImageByGPU(functionID, texture, target, level, internalformat, type, 0,
+                    0, 0, canvas, adjustedSourceSubRectangle);
     } else {
-      texImageByGPU(TexSubImage2DByGPU, texture, target, level, GL_RGBA, type,
-                    xoffset, yoffset, 0, canvas, adjustedSourceSubRectangle);
+      texImageByGPU(functionID, texture, target, level, GL_RGBA, type, xoffset,
+                    yoffset, 0, canvas, adjustedSourceSubRectangle);
     }
   } else {
     // 3D functions.
@@ -5062,12 +5089,14 @@ void WebGLRenderingContextBase::texImageHelperHTMLCanvasElement(
     // TODO(zmo): Implement GPU-to-GPU copy path (crbug.com/612542).
     // Note that code will also be needed to copy to layers of 3D
     // textures, and elements of 2D texture arrays.
-    texImageImpl(functionID, target, level, internalformat, xoffset, yoffset,
-                 zoffset, format, type,
-                 canvas->copiedImage(FrontBuffer, PreferAcceleration).get(),
-                 WebGLImageConversion::HtmlDomCanvas, m_unpackFlipY,
-                 m_unpackPremultiplyAlpha, sourceSubRectangle, depth,
-                 unpackImageHeight);
+    texImageImpl(
+        functionID, target, level, internalformat, xoffset, yoffset, zoffset,
+        format, type, canvas
+                          ->copiedImage(FrontBuffer, PreferAcceleration,
+                                        functionIDToSnapshotReason(functionID))
+                          .get(),
+        WebGLImageConversion::HtmlDomCanvas, m_unpackFlipY,
+        m_unpackPremultiplyAlpha, sourceSubRectangle, depth, unpackImageHeight);
   }
 }
 
@@ -5175,7 +5204,8 @@ void WebGLRenderingContextBase::texImageHelperHTMLVideoElement(
                        video->videoHeight(), 0, format, type, nullptr);
 
         if (imageBuffer->copyToPlatformTexture(
-                contextGL(), texture->object(), internalformat, type, level,
+                functionIDToSnapshotReason(functionID), contextGL(),
+                texture->object(), internalformat, type, level,
                 m_unpackPremultiplyAlpha, m_unpackFlipY, IntPoint(0, 0),
                 IntRect(0, 0, video->videoWidth(), video->videoHeight()))) {
           return;
@@ -5284,15 +5314,18 @@ void WebGLRenderingContextBase::texImageHelperImageBitmap(
     if (functionID == TexImage2D) {
       texImage2DBase(target, level, internalformat, width, height, 0, format,
                      type, 0);
-      texImageByGPU(TexImage2DByGPU, texture, target, level, internalformat,
-                    type, 0, 0, 0, bitmap, sourceSubRect);
+      texImageByGPU(functionID, texture, target, level, internalformat, type, 0,
+                    0, 0, bitmap, sourceSubRect);
     } else if (functionID == TexSubImage2D) {
-      texImageByGPU(TexSubImage2DByGPU, texture, target, level, GL_RGBA, type,
-                    xoffset, yoffset, 0, bitmap, sourceSubRect);
+      texImageByGPU(functionID, texture, target, level, GL_RGBA, type, xoffset,
+                    yoffset, 0, bitmap, sourceSubRect);
     }
     return;
   }
-  sk_sp<SkImage> skImage = bitmap->bitmapImage()->imageForCurrentFrame();
+  // TODO(ccameron): WebGL should produce sRGB images.
+  // https://crbug.com/672299
+  sk_sp<SkImage> skImage = bitmap->bitmapImage()->imageForCurrentFrame(
+      ColorBehavior::transformToGlobalTarget());
   SkPixmap pixmap;
   uint8_t* pixelDataPtr = nullptr;
   RefPtr<Uint8Array> pixelData;

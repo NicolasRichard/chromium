@@ -9,6 +9,7 @@ import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
@@ -52,8 +53,9 @@ public class PaymentRequestContactDetailsTest extends PaymentRequestTestBase {
     }
 
     /** Attempt to add invalid contact information and cancel the transaction. */
-    @MediumTest
-    @Feature({"Payments"})
+    // @MediumTest
+    // @Feature({"Payments"})
+    @DisabledTest
     public void testAddInvalidContactAndCancel()
             throws InterruptedException, ExecutionException, TimeoutException {
         triggerUIAndWait(mReadyToPay);
@@ -129,6 +131,40 @@ public class PaymentRequestContactDetailsTest extends PaymentRequestTestBase {
         mDismissed.waitForCallback(callCount);
 
         expectResultContains(new String[] {"Request cancelled"});
+    }
+
+    /** Test that going into the editor and cancelling will leave the row checked. */
+    @MediumTest
+    @Feature({"Payments"})
+    public void testEditContactAndCancelEditorShouldKeepContactSelected()
+            throws InterruptedException, ExecutionException, TimeoutException {
+        triggerUIAndWait(mReadyToPay);
+        clickInContactInfoAndWait(R.id.payments_section, mReadyForInput);
+        expectContactDetailsRowIsSelected(0);
+        clickInContactInfoAndWait(R.id.payments_open_editor_pencil_button, mReadyToEdit);
+
+        // Cancel the editor.
+        clickInEditorAndWait(R.id.payments_edit_cancel_button, mReadyForInput);
+
+        // Expect the row to still be selected in the Contact Details section.
+        expectContactDetailsRowIsSelected(0);
+    }
+
+    /** Test that going into the "add" flow and cancelling will leave existing row checked. */
+    @MediumTest
+    @Feature({"Payments"})
+    public void testAddContactAndCancelEditorShouldKeepContactSelected()
+            throws InterruptedException, ExecutionException, TimeoutException {
+        triggerUIAndWait(mReadyToPay);
+        clickInContactInfoAndWait(R.id.payments_section, mReadyForInput);
+        expectContactDetailsRowIsSelected(0);
+        clickInContactInfoAndWait(R.id.payments_add_option_button, mReadyToEdit);
+
+        // Cancel the editor.
+        clickInEditorAndWait(R.id.payments_edit_cancel_button, mReadyForInput);
+
+        // Expect the existing row to still be selected in the Contact Details section.
+        expectContactDetailsRowIsSelected(0);
     }
 
     /** Quickly pressing on "add contact info" and then "cancel" should not crash. */

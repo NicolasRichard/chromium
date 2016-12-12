@@ -33,14 +33,21 @@
 
 namespace blink {
 
+class LocalFrame;
+
 class CORE_EXPORT ContextLifecycleObserver
     : public LifecycleObserver<ExecutionContext, ContextLifecycleObserver> {
  public:
+  // Returns null after the observing context is detached.
   ExecutionContext* getExecutionContext() const { return lifecycleContext(); }
+
+  // Returns null after the observing context is detached or if the context
+  // doesn't have a frame (i.e., if the context is not a Document).
+  LocalFrame* frame() const;
 
   enum Type {
     GenericType,
-    ActiveDOMObjectType,
+    SuspendableObjectType,
   };
 
   Type observerType() const { return m_observerType; }

@@ -2101,13 +2101,6 @@ split_static_library("ui") {
       "webui/settings/native_certificates_handler.h",
     ]
   }
-  if (enable_themes) {
-    sources += [
-      "webui/theme_source.cc",
-      "webui/theme_source.h",
-    ]
-    deps += [ "//chrome/browser:theme_properties" ]
-  }
   if (enable_print_preview) {
     sources += [
       "webui/print_preview/extension_printer_handler.cc",
@@ -2274,7 +2267,13 @@ split_static_library("ui") {
       deps -= [ "//ui/events" ]
     }
   } else {
-    sources += [ "browser_window.h" ]
+    # !is_android
+    sources += [
+      "browser_window.h",
+      "webui/theme_source.cc",
+      "webui/theme_source.h",
+    ]
+    deps += [ "//chrome/browser:theme_properties" ]
   }
 
   if (is_mac) {
@@ -2844,8 +2843,6 @@ split_static_library("ui") {
         "cocoa/profiles/avatar_button_controller.mm",
         "cocoa/profiles/avatar_icon_controller.h",
         "cocoa/profiles/avatar_icon_controller.mm",
-        "cocoa/profiles/avatar_menu_bubble_controller.h",
-        "cocoa/profiles/avatar_menu_bubble_controller.mm",
         "cocoa/profiles/profile_chooser_controller.h",
         "cocoa/profiles/profile_chooser_controller.mm",
         "cocoa/profiles/profile_signin_confirmation_dialog_cocoa.h",
@@ -3420,10 +3417,10 @@ static_library("test_support") {
   testonly = true
 
   sources = [
-    "cocoa/cocoa_test_helper.h",
-    "cocoa/cocoa_test_helper.mm",
-    "cocoa/run_loop_testing.h",
-    "cocoa/run_loop_testing.mm",
+    "cocoa/test/cocoa_test_helper.h",
+    "cocoa/test/cocoa_test_helper.mm",
+    "cocoa/test/run_loop_testing.h",
+    "cocoa/test/run_loop_testing.mm",
     "find_bar/find_bar_host_unittest_util.h",
     "login/login_handler_test_utils.cc",
     "login/login_handler_test_utils.h",

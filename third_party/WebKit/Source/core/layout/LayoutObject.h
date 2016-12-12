@@ -805,7 +805,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   }
   bool hasOverflowClip() const { return m_bitfields.hasOverflowClip(); }
   bool hasClipRelatedProperty() const {
-    return hasClip() || hasOverflowClip() || style()->containsPaint();
+    return hasClip() || hasOverflowClip() || hasClipPath() ||
+           style()->containsPaint();
   }
 
   bool hasTransformRelatedProperty() const {
@@ -1445,7 +1446,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   virtual int caretMaxOffset() const;
 
   // ImageResourceClient override.
-  void imageChanged(ImageResource*, const IntRect* = nullptr) final;
+  void imageChanged(ImageResourceContent*, const IntRect* = nullptr) final;
   bool willRenderImage() final;
   bool getImageAnimationPolicy(ImageAnimationPolicy&) final;
 

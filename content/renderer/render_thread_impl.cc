@@ -600,7 +600,7 @@ void RenderThreadImpl::SetRenderMessageFilterForTesting(
 RenderThreadImpl::RenderThreadImpl(
     const InProcessChildThreadParams& params,
     std::unique_ptr<blink::scheduler::RendererScheduler> scheduler,
-    scoped_refptr<base::SingleThreadTaskRunner>& resource_task_queue)
+    const scoped_refptr<base::SingleThreadTaskRunner>& resource_task_queue)
     : ChildThreadImpl(Options::Builder()
                           .InBrowserProcess(params)
                           .AutoStartServiceManagerConnection(false)
@@ -636,7 +636,7 @@ RenderThreadImpl::RenderThreadImpl(
 }
 
 void RenderThreadImpl::Init(
-    scoped_refptr<base::SingleThreadTaskRunner>& resource_task_queue) {
+    const scoped_refptr<base::SingleThreadTaskRunner>& resource_task_queue) {
   TRACE_EVENT0("startup", "RenderThreadImpl::Init");
 
   base::trace_event::TraceLog::GetInstance()->SetThreadSortIndex(
@@ -1180,9 +1180,11 @@ void RenderThreadImpl::RemoveFilter(IPC::MessageFilter* filter) {
 
 void RenderThreadImpl::AddObserver(RenderThreadObserver* observer) {
   observers_.AddObserver(observer);
+  observer->RegisterMojoInterfaces(&associated_interfaces_);
 }
 
 void RenderThreadImpl::RemoveObserver(RenderThreadObserver* observer) {
+  observer->UnregisterMojoInterfaces(&associated_interfaces_);
   observers_.RemoveObserver(observer);
 }
 
@@ -1231,7 +1233,7 @@ void RenderThreadImpl::InitializeCompositorThread() {
 }
 
 void RenderThreadImpl::InitializeWebKit(
-    scoped_refptr<base::SingleThreadTaskRunner>& resource_task_queue) {
+    const scoped_refptr<base::SingleThreadTaskRunner>& resource_task_queue) {
   DCHECK(!blink_platform_impl_);
 
   const base::CommandLine& command_line =
@@ -1809,31 +1811,20 @@ void RenderThreadImpl::OnProcessPurgeAndSuspend() {
 namespace {
 
 static size_t GetMallocUsage() {
-  DWORD number_of_heaps = ::GetProcessHeaps(0, NULL);
-  if (number_of_heaps <= 0)
+  // Only checks the default process heap.
+  HANDLE heap = ::GetProcessHeap();
+  if (heap == NULL)
     return 0;
-
+  if (!::HeapLock(heap))
+    return 0 ;
   size_t malloc_usage = 0;
-  std::unique_ptr<HANDLE[]> heaps(new HANDLE[number_of_heaps]);
-  // If some heaps were gone between the first GetProcessHeaps and here,
-  // GetProcessHeaps obtains small number of heaps.
-  // If some new heaps were available between the first GetProcessHeaps and
-  // here, GetProcessHeaps returns larger number than number_of_heaps.
-  // So we need to see min(number_of_obtained_heaps, number_of_heaps).
-  DWORD number_of_obtained_heaps =
-      ::GetProcessHeaps(number_of_heaps, heaps.get());
-  for (size_t i = 0; i < number_of_heaps && i < number_of_obtained_heaps; i++) {
-    PROCESS_HEAP_ENTRY heap_entry;
-    ::HeapLock(heaps[i]);
-    heap_entry.lpData = NULL;
-    while (::HeapWalk(heaps[i], &heap_entry) != 0) {
-      if (heap_entry.lpData == heaps.get())
-        continue;
-      if ((heap_entry.wFlags & PROCESS_HEAP_ENTRY_BUSY) != 0)
-        malloc_usage += heap_entry.cbData;
-    }
-    ::HeapUnlock(heaps[i]);
+  PROCESS_HEAP_ENTRY heap_entry;
+  heap_entry.lpData = NULL;
+  while (::HeapWalk(heap, &heap_entry) != 0) {
+    if ((heap_entry.wFlags & PROCESS_HEAP_ENTRY_BUSY) != 0)
+      malloc_usage += heap_entry.cbData;
   }
+  ::HeapUnlock(heap);
   return malloc_usage;
 }
 

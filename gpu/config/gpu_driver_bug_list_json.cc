@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "9.22",
+  "version": "9.24",
   "entries": [
     {
       "id": 1,
@@ -1904,7 +1904,6 @@ LONG_STRING_CONST(
       "os": {
         "type": "macosx"
       },
-      "vendor_id": "0x8086",
       "features": [
         "reset_base_mipmap_level_before_texstorage"
       ]
@@ -2267,6 +2266,18 @@ LONG_STRING_CONST(
         "type": "chromeos"
       },
       "vendor_id": "0x8086",
+      "features": [
+        "decode_encode_srgb_for_generatemipmap"
+      ]
+    },
+    {
+      "id": 210,
+      "description": "Decode and Encode before generateMipmap for srgb format textures on Linux AMD",
+      "cr_bugs": [634519],
+      "os": {
+        "type": "linux"
+      },
+      "vendor_id": "0x1002",
       "features": [
         "decode_encode_srgb_for_generatemipmap"
       ]

@@ -383,6 +383,10 @@ RenderFrameHostImpl::RenderFrameHostImpl(SiteInstance* site_instance,
 }
 
 RenderFrameHostImpl::~RenderFrameHostImpl() {
+  // Destroying navigation handle may call into delegates/observers,
+  // so we do it early while |this| object is still in a sane state.
+  navigation_handle_.reset();
+
   // Release the WebUI instances before all else as the WebUI may accesses the
   // RenderFrameHost during cleanup.
   ClearAllWebUI();
@@ -475,10 +479,8 @@ const GURL& RenderFrameHostImpl::GetLastCommittedURL() {
   return last_committed_url();
 }
 
-url::Origin RenderFrameHostImpl::GetLastCommittedOrigin() {
-  // Origin is stored per-FTN, so it's incorrect to call for a non-current RFH.
-  CHECK(this == frame_tree_node_->current_frame_host());
-  return frame_tree_node_->current_origin();
+const url::Origin& RenderFrameHostImpl::GetLastCommittedOrigin() {
+  return last_committed_origin_;
 }
 
 gfx::NativeView RenderFrameHostImpl::GetNativeView() {

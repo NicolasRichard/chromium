@@ -216,6 +216,7 @@ _BANNED_CPP_FUNCTIONS = (
         r"^net[\\\/]test[\\\/]spawned_test_server[\\\/]local_test_server\.cc$",
         r"^net[\\\/]test[\\\/]test_data_directory\.cc$",
         r"^net[\\\/]url_request[\\\/]test_url_fetcher_factory\.cc$",
+        r"^remoting[\\\/]protocol[\\\/]webrtc_transport\.cc$",
         r"^ui[\\\/]base[\\\/]material_design[\\\/]"
             "material_design_controller\.cc$",
         r"^ui[\\\/]gl[\\\/]init[\\\/]gl_initializer_mac\.cc$",
@@ -1585,8 +1586,9 @@ def _CheckMojoUsesNewWrapperTypes(input_api, output_api):
 
 
 def _CheckUselessForwardDeclarations(input_api, output_api):
-  """Checks that added or removed lines in affected header files
-     do not lead to new useless class or struct forward declaration.
+  """Checks that added or removed lines in non third party affected
+     header files do not lead to new useless class or struct forward
+     declaration.
   """
   results = []
   class_pattern = input_api.re.compile(r'^class\s+(\w+);$',
@@ -1594,6 +1596,11 @@ def _CheckUselessForwardDeclarations(input_api, output_api):
   struct_pattern = input_api.re.compile(r'^struct\s+(\w+);$',
                                         input_api.re.MULTILINE)
   for f in input_api.AffectedFiles(include_deletes=False):
+    if (f.LocalPath().startswith('third_party') and
+        not f.LocalPath().startswith('third_party/WebKit') and
+        not f.LocalPath().startswith('third_party\\WebKit')):
+      continue
+
     if not f.LocalPath().endswith('.h'):
       continue
 

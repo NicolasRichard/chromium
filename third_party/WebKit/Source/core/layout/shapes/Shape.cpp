@@ -32,7 +32,6 @@
 #include "core/css/BasicShapeFunctions.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMTypedArray.h"
-#include "core/fetch/ImageResource.h"
 #include "core/layout/shapes/BoxShape.h"
 #include "core/layout/shapes/PolygonShape.h"
 #include "core/layout/shapes/RasterShape.h"
@@ -243,9 +242,11 @@ std::unique_ptr<Shape> Shape::createRasterShape(Image* image,
     SkPaint paint;
     IntRect imageSourceRect(IntPoint(), image->size());
     IntRect imageDestRect(IntPoint(), imageRect.size());
+    // TODO(ccameron): No color conversion is required here.
     image->draw(imageBuffer->canvas(), paint, imageDestRect, imageSourceRect,
                 DoNotRespectImageOrientation,
-                Image::DoNotClampImageToSourceRect);
+                Image::DoNotClampImageToSourceRect,
+                ColorBehavior::transformToGlobalTarget());
 
     WTF::ArrayBufferContents contents;
     imageBuffer->getImageData(Unmultiplied,

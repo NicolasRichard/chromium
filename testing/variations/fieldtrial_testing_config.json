@@ -1808,6 +1808,41 @@
             ]
         }
     ],
+    "SafeBrowsingScoutTransitionStudy": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "CanShowScoutOptInGroup",
+                    "enable_features": [
+                        "CanShowScoutOptIn"
+                    ]
+                },
+                {
+                    "name": "OnlyShowScoutOptInGroup",
+                    "enable_features": [
+                        "OnlyShowScoutOptIn"
+                    ]
+                },
+                {
+                    "name": "Control",
+                    "disable_features": [
+                        "CanShowScoutOptIn",
+                        "OnlyShowScoutOptIn"
+                    ]
+                },
+                {
+                    "name": "Default"
+                }
+            ]
+        }
+    ],
     "SafeBrowsingUpdateFrequency": [
         {
             "platforms": [
@@ -1915,7 +1950,7 @@
                 {
                     "name": "Enabled",
                     "params": {
-                        "animation": "animate-all",
+                        "animation": "animate-nonsecure-only",
                         "visibility": "show-all"
                     },
                     "enable_features": [

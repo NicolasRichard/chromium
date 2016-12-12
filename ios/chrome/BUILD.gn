@@ -3,19 +3,14 @@
 # found in the LICENSE file.
 
 import("//ios/build/config.gni")
+import("//ios/public/provider/chrome/browser/build_config.gni")
 import("//testing/test.gni")
 
 test("ios_chrome_unittests") {
   deps = [
-    # Ensure that all unit tests are run.
+    # Ensure that all unit tests are run and packed resources available.
     "//ios/chrome/test:run_all_unittests",
-
-    # Ensure that packed resources are available (it should be a dependency
-    # of //ios/chrome/app however, Chrome on iOS uses different resources,
-    # so the dependency cannot be added there).
-    # TODO(crbug.com/653086): find a way to fix those dependency as part of
-    # building Chromium for iOS, and then remove the dependency.
-    "//ios/chrome/app/resources:packed_resources",
+    ios_packed_resources_target,
 
     # Add unit_tests target here.
     "//ios/chrome/app:unit_tests",

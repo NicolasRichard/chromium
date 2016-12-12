@@ -283,7 +283,7 @@ void LocalDOMWindow::clearDocument() {
 
   ASSERT(!m_document->isActive());
 
-  // FIXME: This should be part of ActiveDOMObject shutdown
+  // FIXME: This should be part of SuspendableObject shutdown
   clearEventQueue();
 
   m_unusedPreloadsTimer.stop();
@@ -532,7 +532,7 @@ void LocalDOMWindow::sendOrientationChangeEvent() {
     if (!frames[i]->isLocalFrame())
       continue;
     toLocalFrame(frames[i].get())
-        ->localDOMWindow()
+        ->domWindow()
         ->dispatchEvent(Event::create(EventTypeNames::orientationchange));
   }
 }

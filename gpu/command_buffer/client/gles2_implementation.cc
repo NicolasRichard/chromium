@@ -262,21 +262,10 @@ bool GLES2Implementation::Initialize(
     return false;
   }
 
-  // In certain cases, ThreadTaskRunnerHandle isn't set (Android Webview).
-  // Don't register a dump provider in these cases.
-  // TODO(ericrk): Get this working in Android Webview. crbug.com/517156
-  if (base::ThreadTaskRunnerHandle::IsSet()) {
-    base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
-        this, "GLES2Implementation", base::ThreadTaskRunnerHandle::Get());
-  }
-
   return true;
 }
 
 GLES2Implementation::~GLES2Implementation() {
-  base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
-      this);
-
   // Make sure the queries are finished otherwise we'll delete the
   // shared memory (mapped_memory_) which will free the memory used
   // by the queries. The GPU process when validating that memory is still
@@ -403,6 +392,12 @@ void GLES2Implementation::SignalSyncToken(const gpu::SyncToken& sync_token,
     // Invalid sync token, just call the callback immediately.
     callback.Run();
   }
+}
+
+// For some command buffer implementations this can be called from any thread.
+// It's safe to access gpu_control_ without the lock because it is const.
+bool GLES2Implementation::IsFenceSyncReleased(uint64_t release_count) {
+  return gpu_control_->IsFenceSyncReleased(release_count);
 }
 
 void GLES2Implementation::SignalQuery(uint32_t query,
@@ -804,6 +799,15 @@ bool GLES2Implementation::GetHelper(GLenum pname, GLint* params) {
     case GL_MAX_VERTEX_UNIFORM_VECTORS:
       *params = capabilities_.max_vertex_uniform_vectors;
       return true;
+    case GL_MAX_VIEWPORT_DIMS:
+      if (capabilities_.max_viewport_width > 0 &&
+          capabilities_.max_viewport_height > 0) {
+        params[0] = capabilities_.max_viewport_width;
+        params[1] = capabilities_.max_viewport_height;
+        return true;
+      }
+      // If they are not cached on the client side yet, query the service side.
+      return false;
     case GL_NUM_COMPRESSED_TEXTURE_FORMATS:
       *params = capabilities_.num_compressed_texture_formats;
       return true;
@@ -847,6 +851,23 @@ bool GLES2Implementation::GetHelper(GLenum pname, GLint* params) {
       *params = static_cast<GLint>(query_tracker_->CheckAndResetDisjoint());
       return true;
 
+    case GL_VIEWPORT:
+      if (state_.viewport_width > 0 &&
+          state_.viewport_height > 0 &&
+          capabilities_.max_viewport_width > 0 &&
+          capabilities_.max_viewport_height > 0) {
+        params[0] = state_.viewport_x;
+        params[1] = state_.viewport_y;
+        params[2] = std::min(state_.viewport_width,
+                             capabilities_.max_viewport_width);
+        params[3] = std::min(state_.viewport_height,
+                             capabilities_.max_viewport_height);
+        return true;
+      }
+      // If they haven't been cached on the client side, go to service side
+      // to query the underlying driver.
+      return false;
+
     // Non-cached parameters.
     case GL_ALIASED_LINE_WIDTH_RANGE:
     case GL_ALIASED_POINT_SIZE_RANGE:
@@ -879,7 +900,6 @@ bool GLES2Implementation::GetHelper(GLenum pname, GLint* params) {
     case GL_IMPLEMENTATION_COLOR_READ_FORMAT:
     case GL_IMPLEMENTATION_COLOR_READ_TYPE:
     case GL_LINE_WIDTH:
-    case GL_MAX_VIEWPORT_DIMS:
     case GL_PACK_ALIGNMENT:
     case GL_POLYGON_OFFSET_FACTOR:
     case GL_POLYGON_OFFSET_FILL:
@@ -914,7 +934,6 @@ bool GLES2Implementation::GetHelper(GLenum pname, GLint* params) {
     case GL_STENCIL_WRITEMASK:
     case GL_SUBPIXEL_BITS:
     case GL_UNPACK_ALIGNMENT:
-    case GL_VIEWPORT:
       return false;
     default:
       break;
@@ -7028,6 +7047,22 @@ void GLES2Implementation::UpdateCachedExtensionsIfNeeded() {
 void GLES2Implementation::InvalidateCachedExtensions() {
   cached_extension_string_ = nullptr;
   cached_extensions_.clear();
+}
+
+void GLES2Implementation::Viewport(GLint x,
+                                   GLint y,
+                                   GLsizei width,
+                                   GLsizei height) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glViewport(" << x << ", " << y
+                     << ", " << width << ", " << height << ")");
+  if (width < 0 || height < 0) {
+    SetGLError(GL_INVALID_VALUE, "glViewport", "negative width/height");
+    return;
+  }
+  state_.SetViewport(x, y, width, height);
+  helper_->Viewport(x, y, width, height);
+  CheckGLError();
 }
 
 // Include the auto-generated part of this file. We split this because it means

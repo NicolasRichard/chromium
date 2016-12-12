@@ -396,6 +396,8 @@ source_set("common") {
     "browser/net/aw_url_request_context_getter.h",
     "browser/net/aw_url_request_job_factory.cc",
     "browser/net/aw_url_request_job_factory.h",
+    "browser/net/aw_web_resource_request.cc",
+    "browser/net/aw_web_resource_request.h",
     "browser/net/aw_web_resource_response.h",
     "browser/net/init_native_callback.h",
     "browser/net/input_stream_reader.cc",
@@ -486,6 +488,8 @@ source_set("common") {
     "//components/metrics:profiler",
     "//components/metrics:ui",
     "//components/navigation_interception",
+    "//components/policy:generated",
+    "//components/policy/core/browser",
     "//components/prefs",
     "//components/printing/browser",
     "//components/printing/common",
@@ -523,13 +527,6 @@ source_set("common") {
     "//ui/shell_dialogs",
     "//v8",
   ]
-
-  if (enable_configuration_policy) {
-    deps += [
-      "//components/policy:generated",
-      "//components/policy/core/browser",
-    ]
-  }
 
   if (enable_spellcheck) {
     deps += [
@@ -600,6 +597,9 @@ android_library("android_webview_java") {
     "java/src/org/chromium/android_webview/JsResultReceiver.java",
     "java/src/org/chromium/android_webview/NullAwViewMethods.java",
     "java/src/org/chromium/android_webview/OverScrollGlow.java",
+
+    # TODO(gsennton): remove PlatformServiceBridge after downstream has been updated to depend on
+    # android_webview_platform_services_java
     "java/src/org/chromium/android_webview/PlatformServiceBridge.java",
     "java/src/org/chromium/android_webview/PopupTouchHandleDrawable.java",
     "java/src/org/chromium/android_webview/ResourcesContextWrapperFactory.java",
@@ -615,6 +615,7 @@ android_library("android_webview_java") {
     "//base:base_java",
     "//components/autofill/android:autofill_java",
     "//components/navigation_interception/android:navigation_interception_java",
+    "//components/policy/android:policy_java",
     "//components/web_contents_delegate_android:web_contents_delegate_android_java",
     "//components/web_restrictions:web_restrictions_java",
     "//content/public/android:content_java",
@@ -625,10 +626,6 @@ android_library("android_webview_java") {
     google_play_services_library,
     google_play_services_resources,
   ]
-
-  if (enable_configuration_policy) {
-    deps += [ "//components/policy/android:policy_java" ]
-  }
 
   if (enable_spellcheck) {
     deps += [ "//components/spellcheck/browser/android:java" ]
@@ -684,6 +681,17 @@ java_strings_grd("strings_grd") {
     "values-zh-rCN/android_webview_strings.xml",
     "values-zh-rTW/android_webview_strings.xml",
     "values/android_webview_strings.xml",
+  ]
+}
+
+# Separate target to allow for a dependency on GmsCore without pulling in all of
+# android_webview_java.
+android_library("android_webview_platform_services_java") {
+  java_files =
+      [ "java/src/org/chromium/android_webview/PlatformServiceBridge.java" ]
+
+  deps = [
+    "//base:base_java",
   ]
 }
 

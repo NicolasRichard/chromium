@@ -765,12 +765,10 @@ COMMON_GTESTS = {
         # added.
         'build_configs': ['Release', 'Release_x64'],
         'swarming_dimension_sets': [
-          # NVIDIA Win 7
           {
             'gpu': '10de:104a',
             'os': 'Windows-2008ServerR2-SP1'
           },
-          # AMD Win 7
           {
             'gpu': '1002:6613',
             'os': 'Windows-2008ServerR2-SP1'
@@ -798,7 +796,6 @@ COMMON_GTESTS = {
         # trybots) for the time being, at least until more capacity is added.
         'build_configs': ['Release', 'Release_x64'],
         'swarming_dimension_sets': [
-          # NVIDIA Linux
           {
             'gpu': '10de:104a',
             'os': 'Linux'
@@ -826,7 +823,6 @@ COMMON_GTESTS = {
         # Run on Nexus 5X swarmed bots.
         'build_configs': ['android-chromium'],
         'swarming_dimension_sets': [
-          # Nexus 5X
           {
             'device_type': 'bullhead',
             'device_os': 'M',
@@ -850,20 +846,15 @@ COMMON_GTESTS = {
     'tester_configs': [
       {
         'fyi_only': True,
-        # TODO(jmadill): Run this on ANGLE roll tryservers.
+        # TODO(jmadill): Run this on the optional tryservers.
         'run_on_optional': False,
-        # Run only on the NVIDIA and AMD Win7 bots (and trybots) for the time
-        # being, at least until more capacity is added.
+        # Run only on the Win7 Release NVIDIA 32-bit bots (and trybots) for the
+        # time being, at least until more capacity is added.
+        # TODO(jmadill): Run on the Win AMD R7 240 bots once they are swarmed.
         'build_configs': ['Release'],
         'swarming_dimension_sets': [
-          # NVIDIA Win 7
           {
             'gpu': '10de:104a',
-            'os': 'Windows-2008ServerR2-SP1'
-          },
-          # AMD Win 7
-          {
-            'gpu': '1002:6613',
             'os': 'Windows-2008ServerR2-SP1'
           }
         ],
@@ -883,13 +874,12 @@ COMMON_GTESTS = {
     'tester_configs': [
       {
         'fyi_only': True,
-        # TODO(jmadill): Run this on ANGLE roll tryservers.
+        # TODO(jmadill): Run this on the optional tryservers.
         'run_on_optional': False,
         # Run only on the Linux Release NVIDIA 32-bit bots (and trybots) for
         # the time being, at least until more capacity is added.
         'build_configs': ['Release'],
         'swarming_dimension_sets': [
-          # NVIDIA Linux
           {
             'gpu': '10de:104a',
             'os': 'Linux'
@@ -1442,6 +1432,9 @@ def tester_config_matches_tester(tester_name, tester_config, tc, is_fyi,
   return True
 
 def should_run_on_tester(tester_name, tester_config, test_config, is_fyi):
+  # TODO(jmadill): Re-enable when n5x fixed. See http://crbug.com/672502.
+  if 'Nexus 5X' in tester_name:
+    return False
   # Check if this config is disabled on this tester
   if 'disabled_tester_configs' in test_config:
     for dtc in test_config['disabled_tester_configs']:

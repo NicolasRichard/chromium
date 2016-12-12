@@ -111,7 +111,6 @@ static_library("test_support") {
     "//components/metrics:test_support",
     "//components/omnibox/browser:test_support",
     "//components/password_manager/core/browser:test_support",
-    "//components/pref_registry:test_support",
     "//components/prefs:test_support",
     "//components/rappor:test_support",
     "//components/search_engines:test_support",
@@ -2087,6 +2086,7 @@ test("browser_tests") {
         "../browser/ui/ash/launcher/launcher_favicon_loader_browsertest.cc",
         "../browser/ui/ash/multi_user/multi_user_window_manager_test.cc",
         "../browser/ui/ash/multi_user/multi_user_window_manager_test.h",
+        "../browser/ui/ash/networking_config_delegate_chromeos_browsertest.cc",
         "../browser/ui/ash/shelf_browsertest.cc",
         "../browser/ui/ash/system_tray_delegate_chromeos_browsertest_chromeos.cc",
         "../browser/ui/ash/system_tray_tray_cast_browsertest_media_router_chromeos.cc",
@@ -3248,7 +3248,6 @@ test("unit_tests") {
     "../browser/policy/file_selection_dialogs_policy_handler_unittest.cc",
     "../browser/policy/javascript_policy_handler_unittest.cc",
     "../browser/policy/managed_bookmarks_policy_handler_unittest.cc",
-    "../browser/policy/policy_path_parser_unittest.cc",
     "../browser/policy/profile_policy_connector_unittest.cc",
     "../browser/predictors/autocomplete_action_predictor_table_unittest.cc",
     "../browser/predictors/autocomplete_action_predictor_unittest.cc",
@@ -3526,8 +3525,8 @@ test("unit_tests") {
   }
 
   if (is_android) {
-    # Offline pages are currently only on Android.
     sources += [
+      # Offline pages are currently only on Android.
       "../browser/android/offline_pages/offline_page_mhtml_archiver_unittest.cc",
       "../browser/android/offline_pages/offline_page_request_job_unittest.cc",
       "../browser/android/offline_pages/offline_page_utils_unittest.cc",
@@ -3540,8 +3539,13 @@ test("unit_tests") {
       "../browser/android/offline_pages/test_offline_page_model_builder.h",
       "../browser/android/offline_pages/test_request_coordinator_builder.cc",
       "../browser/android/offline_pages/test_request_coordinator_builder.h",
+      "../browser/autofill/autofill_credit_card_filling_infobar_delegate_mobile_unittest.cc",
+      "../browser/autofill/autofill_save_card_infobar_delegate_mobile_unittest.cc",
+      "../browser/password_manager/account_chooser_dialog_android_unittest.cc",
+      "../browser/password_manager/auto_signin_first_run_dialog_android_unittest.cc",
+      "../browser/password_manager/save_password_infobar_delegate_android_unittest.cc",
+      "../browser/permissions/permission_queue_controller_unittest.cc",
     ]
-    sources -= [ "../browser/policy/policy_path_parser_unittest.cc" ]
     deps += [
       ":unit_tests_java",
       "//components/gcm_driver/instance_id/android:instance_id_driver_java",
@@ -3550,12 +3554,12 @@ test("unit_tests") {
       "//components/offline_pages/core/background:test_support",
       "//v8:v8_external_startup_data_assets",
     ]
-    deps -= [ "//third_party/libaddressinput" ]
 
     android_manifest =
         "//chrome/test/android/unit_tests_apk/AndroidManifest.xml"
     enable_multidex = true
   } else {
+    # !is_android
     sources += [
       # Bookmark export/import are handled via the BookmarkColumns
       # ContentProvider.
@@ -3594,6 +3598,7 @@ test("unit_tests") {
       "../browser/notifications/message_center_settings_controller_unittest.cc",
       "../browser/permissions/permission_request_manager_unittest.cc",
       "../browser/platform_util_unittest.cc",
+      "../browser/policy/policy_path_parser_unittest.cc",
       "../browser/power_usage_monitor/power_usage_monitor_unittest.cc",
       "../browser/process_singleton_posix_unittest.cc",
       "../browser/profile_resetter/profile_resetter_unittest.cc",
@@ -3618,7 +3623,12 @@ test("unit_tests") {
       "../browser/task_manager/task_manager_observer_unittest.cc",
       "../browser/task_manager/test_task_manager.cc",
       "../browser/task_manager/test_task_manager.h",
+      "../browser/themes/browser_theme_pack_unittest.cc",
+      "../browser/themes/theme_properties_unittest.cc",
+      "../browser/themes/theme_service_unittest.cc",
+      "../browser/themes/theme_syncable_service_unittest.cc",
       "../browser/translate/translate_manager_render_view_host_unittest.cc",
+      "../browser/ui/webui/theme_source_unittest.cc",
 
       # The autofill popup is implemented in mostly native code on Android.
       "../browser/ui/autofill/autofill_popup_controller_unittest.cc",
@@ -3720,7 +3730,10 @@ test("unit_tests") {
     ]
     sources -=
         [ "../browser/download/download_request_infobar_delegate_unittest.cc" ]
-    deps += [ "//device/battery:mojo_bindings" ]
+    deps += [
+      "//device/battery:mojo_bindings",
+      "//third_party/libaddressinput",
+    ]
   }
 
   if (!is_ios && !is_android) {
@@ -4513,8 +4526,6 @@ test("unit_tests") {
         "../browser/ui/cocoa/bubble_view_unittest.mm",
         "../browser/ui/cocoa/chrome_browser_window_unittest.mm",
         "../browser/ui/cocoa/clickhold_button_cell_unittest.mm",
-        "../browser/ui/cocoa/cocoa_profile_test.h",
-        "../browser/ui/cocoa/cocoa_profile_test.mm",
         "../browser/ui/cocoa/confirm_bubble_controller_unittest.mm",
         "../browser/ui/cocoa/confirm_quit_panel_controller_unittest.mm",
         "../browser/ui/cocoa/constrained_window/constrained_window_alert_unittest.mm",
@@ -4604,19 +4615,15 @@ test("unit_tests") {
         "../browser/ui/cocoa/profiles/avatar_button_controller_unittest.mm",
         "../browser/ui/cocoa/profiles/avatar_button_unittest.mm",
         "../browser/ui/cocoa/profiles/avatar_icon_controller_unittest.mm",
-        "../browser/ui/cocoa/profiles/avatar_menu_bubble_controller_unittest.mm",
         "../browser/ui/cocoa/profiles/profile_chooser_controller_unittest.mm",
         "../browser/ui/cocoa/profiles/profile_menu_controller_unittest.mm",
         "../browser/ui/cocoa/profiles/user_manager_mac_unittest.mm",
-        "../browser/ui/cocoa/run_loop_testing_unittest.mm",
         "../browser/ui/cocoa/screen_capture_notification_ui_cocoa_unittest.mm",
         "../browser/ui/cocoa/spinner_view_unittest.mm",
         "../browser/ui/cocoa/sprite_view_unittest.mm",
         "../browser/ui/cocoa/status_bubble_mac_unittest.mm",
         "../browser/ui/cocoa/status_icons/status_icon_mac_unittest.mm",
         "../browser/ui/cocoa/styled_text_field_cell_unittest.mm",
-        "../browser/ui/cocoa/styled_text_field_test_helper.h",
-        "../browser/ui/cocoa/styled_text_field_test_helper.mm",
         "../browser/ui/cocoa/styled_text_field_unittest.mm",
         "../browser/ui/cocoa/tab_contents/sad_tab_mac_unittest.mm",
         "../browser/ui/cocoa/tabs/alert_indicator_button_cocoa_unittest.mm",
@@ -4624,6 +4631,11 @@ test("unit_tests") {
         "../browser/ui/cocoa/tabs/tab_strip_controller_unittest.mm",
         "../browser/ui/cocoa/tabs/tab_strip_view_unittest.mm",
         "../browser/ui/cocoa/tabs/tab_view_unittest.mm",
+        "../browser/ui/cocoa/test/cocoa_profile_test.h",
+        "../browser/ui/cocoa/test/cocoa_profile_test.mm",
+        "../browser/ui/cocoa/test/run_loop_testing_unittest.mm",
+        "../browser/ui/cocoa/test/styled_text_field_test_helper.h",
+        "../browser/ui/cocoa/test/styled_text_field_test_helper.mm",
         "../browser/ui/cocoa/toolbar/app_toolbar_button_cell_unittest.mm",
         "../browser/ui/cocoa/toolbar/reload_button_unittest.mm",
         "../browser/ui/cocoa/toolbar/toolbar_button_unittest.mm",
@@ -4646,16 +4658,6 @@ test("unit_tests") {
     # but when we tried to pull it up to the common.gypi level, it broke
     # other things like the ui and startup tests. *shrug*
     ldflags = [ "-Wl,-ObjC" ]
-  }
-  if (is_android) {
-    sources += [
-      "../browser/autofill/autofill_credit_card_filling_infobar_delegate_mobile_unittest.cc",
-      "../browser/autofill/autofill_save_card_infobar_delegate_mobile_unittest.cc",
-      "../browser/password_manager/account_chooser_dialog_android_unittest.cc",
-      "../browser/password_manager/auto_signin_first_run_dialog_android_unittest.cc",
-      "../browser/password_manager/save_password_infobar_delegate_android_unittest.cc",
-      "../browser/permissions/permission_queue_controller_unittest.cc",
-    ]
   }
   if (!is_mac && !is_ios) {
     deps += [
@@ -4741,15 +4743,6 @@ test("unit_tests") {
       "../browser/ui/webui/signin/signin_create_profile_handler_unittest.cc",
       "../browser/ui/webui/signin/sync_confirmation_handler_unittest.cc",
       "../browser/upgrade_detector_impl_unittest.cc",
-    ]
-  }
-  if (enable_themes) {
-    sources += [
-      "../browser/themes/browser_theme_pack_unittest.cc",
-      "../browser/themes/theme_properties_unittest.cc",
-      "../browser/themes/theme_service_unittest.cc",
-      "../browser/themes/theme_syncable_service_unittest.cc",
-      "../browser/ui/webui/theme_source_unittest.cc",
     ]
   }
   if (toolkit_views) {

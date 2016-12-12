@@ -40,11 +40,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '291c62a0ff2ca8a98cb30fcdaa6587f8a61bed98',
+  'skia_revision': 'c30833327f0dda75a8fbe061f3f1966d1f6621a3',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': 'e050386b367ad90343a71edfcd4dcd1a59b138ce',
+  'v8_revision': '35e713ce9a5629d09b38019e0e5725bf43d018dd',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -52,7 +52,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'dceacf5b124229447b50d578b78dd389b60f69a2',
+  'angle_revision': 'd0239396b81d1feb29ea6cd51a821b22a0eb08d2',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling build tools
   # and whatever else without interference from each other.
@@ -96,7 +96,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': 'df2363501bd70a2c99ac8a0307a1b864cedf7db6',
+  'catapult_revision': '19565fdb148afc5fc752516f395f715f5d27c1f1',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -150,7 +150,7 @@ deps = {
     Var('chromium_git') + '/external/colorama.git' + '@' + '799604a1041e9b3bc5d2789ecbd7e8db2e18e6b8',
 
   'src/third_party/icu':
-    Var('chromium_git') + '/chromium/deps/icu.git' + '@' + 'dda089a98a4f1512a62a68e8fc47a98aa6d2f963',
+    Var('chromium_git') + '/chromium/deps/icu.git' + '@' + '73e24736676b4b438270fda44e5b2c83b49fdd80',
 
   'src/third_party/hunspell_dictionaries':
     Var('chromium_git') + '/chromium/deps/hunspell_dictionaries.git' + '@' + 'dc6e7c25bf47cbfb466e0701fd2728b4a12e79d5',

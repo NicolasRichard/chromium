@@ -5735,23 +5735,17 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_WEBRTC_HW_DECODING_DESCRIPTION" desc="Description of chrome:flags option to turn off WebRTC hardware video decoding support.">
         Support in WebRTC for decoding video streams using platform hardware.
       </message>
-      <message name="IDS_FLAGS_WEBRTC_HW_ENCODING_NAME" desc="Name of chrome:flags option to turn off WebRTC hardware video encoding support.">
-        WebRTC hardware video encoding
+      <message name="IDS_FLAGS_WEBRTC_HW_VP8_ENCODING_NAME" desc="Name of chrome:flags option to turn off WebRTC vp8 hardware video encoding support.">
+        WebRTC hardware vp8 video encoding
       </message>
-      <message name="IDS_FLAGS_WEBRTC_HW_ENCODING_DESCRIPTION" desc="Description of chrome:flags option to turn off WebRTC hardware video encoding support.">
-        Support in WebRTC for encoding video streams using platform hardware.
+      <message name="IDS_FLAGS_WEBRTC_HW_VP8_ENCODING_DESCRIPTION" desc="Description of chrome:flags option to turn off WebRTC vp8 hardware video encoding support.">
+        Support in WebRTC for encoding vp8 video streams using platform hardware.
       </message>
-      <message name="IDS_FLAGS_WEBRTC_HW_ENCODING_ALL">
-        Disable all hw encoding
+      <message name="IDS_FLAGS_WEBRTC_HW_H264_ENCODING_NAME" desc="Name of chrome:flags option to turn on WebRTC h264 hardware video encoding support.">
+        WebRTC hardware h264 video encoding
       </message>
-      <message name="IDS_FLAGS_WEBRTC_HW_ENCODING_VPX">
-        Disable vpx hw encoding
-      </message>
-      <message name="IDS_FLAGS_WEBRTC_HW_ENCODING_H264">
-        Disable h264 hw encoding
-      </message>
-      <message name="IDS_FLAGS_WEBRTC_HW_ENCODING_NONE">
-        Disable none hw encoding
+      <message name="IDS_FLAGS_WEBRTC_HW_H264_ENCODING_DESCRIPTION" desc="Description of chrome:flags option to turn on WebRTC hardware h264 video encoding support.">
+        Support in WebRTC for encoding h264 video streams using platform hardware.
       </message>
       <message name="IDS_FLAGS_WEBRTC_STUN_ORIGIN_NAME" desc="Name of chrome:flags option to turn on Origin header for WebRTC STUN messages">
         WebRTC Stun origin header
@@ -11218,6 +11212,9 @@ I don't think this site should be blocked!
       <message name="IDS_SYNC_LOGIN_NAME_PROHIBITED" desc="The error message shown when the user tries to sign in to sync using a name that is not allowed by the admin policy">
         Signing in with this username has been disabled by your administrator.
       </message>
+      <message name="IDS_SUPERVISED_USER_NOT_ALLOWED_BY_POLICY" desc="The error message shown when the user tries to use the supervised user profile when it's disabled by policy">
+        Supervised users have been disabled by your administrator.
+      </message>
       <if expr="is_android">
         <message name="IDS_SYNC_USER_NAME_IN_USE_ERROR" desc="Mobile: An error message shown when a user tries to sign in to sync using a user name that's already in use by another profile.">
           This account is already being used on this device.
@@ -11254,7 +11251,7 @@ I don't think this site should be blocked!
         Google may use your browsing history to personalize Search, ads, and other Google services
       </message>
       <message name="IDS_SYNC_CONFIRMATION_SYNC_SETTINGS_LINK_BODY" desc="Label of the section containing the link to go to the sync setting page.">
-        Control how this works in <ph name="BEGIN_LINK">&lt;a id="settingsLink" href="#"&gt;Settings&lt;/a&gt;.</ph>
+        Control how this works in <ph name="BEGIN_LINK">&lt;a id="settingsLink" href="#"&gt;</ph>Settings<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
       </message>
       <message name="IDS_SYNC_CONFIRMATION_CONFIRM_BUTTON_LABEL" desc="Label of the confirmation button in the sync confirmation dialog of the tab modal signin flow">
         Ok, got it
@@ -15695,19 +15692,12 @@ read aloud to screenreader users to announce that a completion is available.">
     <message name="IDS_FLAGS_MEDIA_REMOTING_ENCRYPTED_DESCRIPTION" desc="Desciption for the flag to enable Media Remoting of encrypted content" translateable="false">
       When Media Remoting is enabled, this flag must be enabled to allow the remoting of encrypted content. When disabled, only non-encrypted content can be remoted.
     </message>
-
     <!-- Chrome OS component updates chrome://flags strings -->
     <message name="IDS_FLAGS_CROS_COMP_UPDATES_NAME" desc="Name for the flag to enable Chrome OS component flash updates" translateable="false">
       Chrome OS Flash Component Updates
     </message>
     <message name="IDS_FLAGS_CROS_COMP_UPDATES_DESCRIPTION" desc="Description for the flag to enable Chrome OS component flash updates" translateable="false">
       Enable Flash component updates for Chrome OS.
-    </message>
-    <message name="IDS_FLAGS_COMPONENT_FLASH_ONLY_NAME" desc="Name for the flag to use component flash only" translateable="false">
-      Component Flash Only
-    </message>
-    <message name="IDS_FLAGS_COMPONENT_FLASH_ONLY_DESCRIPTION" desc="Description for the flag to use component flash only" translateable="false">
-      This flag should be used only for testing Flash component updates.
     </message>
   </messages>
  </release>

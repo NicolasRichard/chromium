@@ -2283,25 +2283,6 @@ split_static_library("browser") {
       sources -= [ "net/nss_context_linux.cc" ]
     }
   }
-  if (enable_themes) {
-    sources += [
-      "sync/glue/theme_data_type_controller.cc",
-      "sync/glue/theme_data_type_controller.h",
-      "themes/browser_theme_pack.cc",
-      "themes/browser_theme_pack.h",
-      "themes/custom_theme_supplier.cc",
-      "themes/custom_theme_supplier.h",
-      "themes/theme_properties.cc",
-      "themes/theme_service.cc",
-      "themes/theme_service.h",
-      "themes/theme_service_factory.cc",
-      "themes/theme_service_factory.h",
-      "themes/theme_service_mac.mm",
-      "themes/theme_syncable_service.cc",
-      "themes/theme_syncable_service.h",
-    ]
-    deps += [ ":theme_properties" ]
-  }
 
   if (enable_basic_printing || enable_print_preview) {
     # Some form of printing support.
@@ -2765,6 +2746,8 @@ split_static_library("browser") {
       "sync/glue/extension_data_type_controller.h",
       "sync/glue/extension_setting_data_type_controller.cc",
       "sync/glue/extension_setting_data_type_controller.h",
+      "sync/glue/theme_data_type_controller.cc",
+      "sync/glue/theme_data_type_controller.h",
       "sync/sync_ui_util.cc",
       "sync/sync_ui_util.h",
       "task_manager/providers/browser_process_task.cc",
@@ -2833,6 +2816,18 @@ split_static_library("browser") {
       "task_manager/task_manager_interface.h",
       "task_manager/task_manager_observer.cc",
       "task_manager/task_manager_observer.h",
+      "themes/browser_theme_pack.cc",
+      "themes/browser_theme_pack.h",
+      "themes/custom_theme_supplier.cc",
+      "themes/custom_theme_supplier.h",
+      "themes/theme_properties.cc",
+      "themes/theme_service.cc",
+      "themes/theme_service.h",
+      "themes/theme_service_factory.cc",
+      "themes/theme_service_factory.h",
+      "themes/theme_service_mac.mm",
+      "themes/theme_syncable_service.cc",
+      "themes/theme_syncable_service.h",
       "upgrade_detector.cc",
       "upgrade_detector.h",
       "usb/usb_chooser_controller.cc",
@@ -2843,6 +2838,7 @@ split_static_library("browser") {
       "usb/web_usb_detector.h",
     ]
     deps += [
+      ":theme_properties",
       "//apps",
       "//chrome/browser/policy:path_parser",
       "//chrome/browser/profile_resetter:profile_reset_report_proto",
@@ -3231,14 +3227,14 @@ split_static_library("browser") {
       "android/web_contents_factory.h",
       "android/webapk/chrome_webapk_host.cc",
       "android/webapk/chrome_webapk_host.h",
-      "android/webapk/manifest_upgrade_detector_fetcher.cc",
-      "android/webapk/manifest_upgrade_detector_fetcher.h",
       "android/webapk/webapk_icon_hasher.cc",
       "android/webapk/webapk_icon_hasher.h",
       "android/webapk/webapk_installer.cc",
       "android/webapk/webapk_installer.h",
       "android/webapk/webapk_metrics.cc",
       "android/webapk/webapk_metrics.h",
+      "android/webapk/webapk_update_data_fetcher.cc",
+      "android/webapk/webapk_update_data_fetcher.h",
       "android/webapk/webapk_update_manager.cc",
       "android/webapk/webapk_update_manager.h",
       "android/webapk/webapk_web_manifest_checker.cc",
@@ -3259,6 +3255,8 @@ split_static_library("browser") {
       "dom_distiller/tab_utils_android.h",
       "download/download_request_infobar_delegate_android.cc",
       "download/download_request_infobar_delegate_android.h",
+      "engagement/site_engagement_service_android.cc",
+      "engagement/site_engagement_service_android.h",
       "geolocation/geolocation_infobar_delegate_android.cc",
       "geolocation/geolocation_infobar_delegate_android.h",
       "history/android/android_history_provider_service.cc",
@@ -3496,6 +3494,7 @@ split_static_library("browser") {
       "//chrome_elf:dll_hash",
       "//components/browser_watcher",
       "//components/browser_watcher:browser_watcher_client",
+      "//components/browser_watcher:stability_data",
       "//google_update",
       "//third_party/crashpad/crashpad/client:client",
       "//third_party/iaccessible2",
@@ -3674,9 +3673,9 @@ split_static_library("browser") {
     ]
   }
   if (enable_supervised_users && !is_android) {
-    # TODO(bauerb): This code should be removed (on desktop) once child account
-    # support has launched (https://crbug.com/505443).
     sources += [
+      # TODO(bauerb): The legacy code should be removed (on desktop) once child
+      # account support has launched (https://crbug.com/505443).
       "supervised_user/legacy/custodian_profile_downloader_service.cc",
       "supervised_user/legacy/custodian_profile_downloader_service.h",
       "supervised_user/legacy/custodian_profile_downloader_service_factory.cc",
@@ -3704,10 +3703,6 @@ split_static_library("browser") {
       "supervised_user/legacy/supervised_user_sync_service_factory.cc",
       "supervised_user/legacy/supervised_user_sync_service_factory.h",
       "supervised_user/legacy/supervised_user_sync_service_observer.h",
-    ]
-  }
-  if (enable_supervised_users && enable_themes) {
-    sources += [
       "supervised_user/supervised_user_theme.cc",
       "supervised_user/supervised_user_theme.h",
     ]
@@ -3914,6 +3909,7 @@ if (android_java_ui) {
       "../android/java/src/org/chromium/chrome/browser/download/DownloadItem.java",
       "../android/java/src/org/chromium/chrome/browser/download/DownloadManagerService.java",
       "../android/java/src/org/chromium/chrome/browser/download/ui/ThumbnailProviderImpl.java",
+      "../android/java/src/org/chromium/chrome/browser/engagement/SiteEngagementService.java",
       "../android/java/src/org/chromium/chrome/browser/favicon/FaviconHelper.java",
       "../android/java/src/org/chromium/chrome/browser/favicon/LargeIconBridge.java",
       "../android/java/src/org/chromium/chrome/browser/feedback/ConnectivityChecker.java",
@@ -4028,8 +4024,8 @@ if (android_java_ui) {
       "../android/java/src/org/chromium/chrome/browser/util/UrlUtilities.java",
       "../android/java/src/org/chromium/chrome/browser/webapps/AddToHomescreenManager.java",
       "../android/java/src/org/chromium/chrome/browser/webapps/ChromeWebApkHost.java",
-      "../android/java/src/org/chromium/chrome/browser/webapps/ManifestUpgradeDetectorFetcher.java",
       "../android/java/src/org/chromium/chrome/browser/webapps/WebApkInstaller.java",
+      "../android/java/src/org/chromium/chrome/browser/webapps/WebApkUpdateDataFetcher.java",
       "../android/java/src/org/chromium/chrome/browser/webapps/WebApkUpdateManager.java",
       "../android/java/src/org/chromium/chrome/browser/webapps/WebappRegistry.java",
     ]
@@ -4062,11 +4058,9 @@ if (is_win) {
     ]
     deps = [
       "//base",
+      "//chrome/browser/policy:path_parser",
       "//chrome/common:constants",
     ]
-    if (enable_configuration_policy) {
-      deps += [ "//chrome/browser/policy:path_parser" ]
-    }
   }
 }
 
@@ -4191,6 +4185,8 @@ static_library("test_support") {
     "notifications/notification_test_util.h",
     "notifications/stub_notification_platform_bridge.cc",
     "notifications/stub_notification_platform_bridge.h",
+    "policy/test/local_policy_test_server.cc",
+    "policy/test/local_policy_test_server.h",
     "search_engines/template_url_service_factory_test_util.cc",
     "search_engines/template_url_service_factory_test_util.h",
     "search_engines/template_url_service_test_util.cc",
@@ -4233,6 +4229,7 @@ static_library("test_support") {
     "//components/invalidation/impl",
     "//components/invalidation/impl:test_support",
     "//components/password_manager/core/browser:test_support",
+    "//components/policy/core/browser:test_support",
     "//components/prefs:test_support",
     "//components/search_engines:test_support",
     "//components/sessions:test_support",
@@ -4329,14 +4326,6 @@ static_library("test_support") {
     ]
     configs += [ "//build/config/linux/dbus" ]
     deps += [ "//chromeos:test_support" ]
-  }
-
-  if (enable_configuration_policy) {
-    sources += [
-      "policy/test/local_policy_test_server.cc",
-      "policy/test/local_policy_test_server.h",
-    ]
-    public_deps += [ "//components/policy/core/browser:test_support" ]
   }
 
   if (safe_browsing_mode == 1) {

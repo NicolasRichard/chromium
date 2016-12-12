@@ -146,8 +146,8 @@ class ServiceManager::Instance
 
     std::unique_ptr<ConnectParams> params(std::move(*connect_params));
     if (!params->connect_callback().is_null()) {
-        params->connect_callback().Run(mojom::ConnectResult::SUCCEEDED,
-                                       identity_.user_id());
+      params->connect_callback().Run(mojom::ConnectResult::SUCCEEDED,
+                                     identity_.user_id());
     }
 
     InterfaceProviderSpecMap specs;
@@ -190,15 +190,19 @@ class ServiceManager::Instance
     StartWithService(std::move(service));
   }
 
-  void StartWithFilePath(const base::FilePath& path) {
-    CHECK(!service_);
+  bool StartWithFilePath(const base::FilePath& path) {
+    DCHECK(!service_);
+    DCHECK(!path.empty());
     runner_ = service_manager_->native_runner_factory_->Create(path);
+    if (!runner_)
+      return false;
     bool start_sandboxed = false;
     mojom::ServicePtr service = runner_->Start(
-        path, identity_, start_sandboxed,
+        identity_, start_sandboxed,
         base::Bind(&Instance::PIDAvailable, weak_factory_.GetWeakPtr()),
         base::Bind(&Instance::OnRunnerCompleted, weak_factory_.GetWeakPtr()));
     StartWithService(std::move(service));
+    return true;
   }
 
   mojom::RunningServiceInfoPtr CreateRunningServiceInfo() const {
@@ -637,9 +641,7 @@ void ServiceManager::OnInstanceError(Instance* instance) {
   if (instance == service_manager_instance_)
     return;
 
-  const Identity identity = instance->identity();
-  identity_to_instance_.erase(identity);
-
+  EraseInstanceIdentity(instance);
   if (instance->parent()) {
     // Deletes |instance|.
     instance->parent()->RemoveChild(instance);
@@ -656,7 +658,7 @@ void ServiceManager::OnInstanceUnreachable(Instance* instance) {
   // If an Instance becomes unreachable, new connection requests for this
   // identity will elicit a new Instance instantiation. The unreachable instance
   // remains alive.
-  identity_to_instance_.erase(instance->identity());
+  EraseInstanceIdentity(instance);
 }
 
 void ServiceManager::OnInstanceStopped(const Identity& identity) {
@@ -713,6 +715,28 @@ ServiceManager::Instance* ServiceManager::GetExistingInstance(
     }
   }
   return nullptr;
+}
+
+void ServiceManager::EraseInstanceIdentity(Instance* instance) {
+  const Identity& identity = instance->identity();
+
+  auto it = identity_to_instance_.find(identity);
+  if (it != identity_to_instance_.end()) {
+    identity_to_instance_.erase(it);
+    return;
+  }
+
+  if (singletons_.find(identity.name()) != singletons_.end()) {
+    singletons_.erase(identity.name());
+    for (auto it = identity_to_instance_.begin();
+         it != identity_to_instance_.end(); ++it) {
+      if (it->first.name() == identity.name() &&
+          it->first.instance() == identity.instance()) {
+        identity_to_instance_.erase(it);
+        return;
+      }
+    }
+  }
 }
 
 void ServiceManager::NotifyServiceStarted(const Identity& identity,
@@ -927,9 +951,10 @@ void ServiceManager::OnGotResolvedName(std::unique_ptr<ConnectParams> params,
         package_path = result->package_path;
       }
 
-      // TODO(rockot): Find a way to block this code path for content but allow
-      // it for chrome_mash.
-      instance->StartWithFilePath(package_path);
+      if (!instance->StartWithFilePath(package_path)) {
+        OnInstanceError(instance);
+        return;
+      }
     }
   }
 

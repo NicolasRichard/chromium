@@ -616,19 +616,6 @@ const FeatureEntry::Choice kSecurityChipAnimationChoices[] = {
      switches::kSecurityChipAnimationAll},
 };
 
-#if BUILDFLAG(ENABLE_WEBRTC)
-const FeatureEntry::Choice kDisableWebRtcHWEncodingChoices[] = {
-    {IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", ""},
-    {IDS_FLAGS_WEBRTC_HW_ENCODING_ALL, switches::kDisableWebRtcHWEncoding, ""},
-    {IDS_FLAGS_WEBRTC_HW_ENCODING_VPX, switches::kDisableWebRtcHWEncoding,
-     switches::kDisableWebRtcHWEncodingVPx},
-    {IDS_FLAGS_WEBRTC_HW_ENCODING_H264, switches::kDisableWebRtcHWEncoding,
-     switches::kDisableWebRtcHWEncodingH264},
-    {IDS_FLAGS_WEBRTC_HW_ENCODING_NONE, switches::kDisableWebRtcHWEncoding,
-     switches::kDisableWebRtcHWEncodingNone},
-};
-#endif  // ENABLE_WEBRTC
-
 #if !defined(OS_ANDROID)
 const FeatureEntry::Choice kEnableDefaultMediaSessionChoices[] = {
     {IDS_FLAGS_ENABLE_DEFAULT_MEDIA_SESSION_DISABLED, "", ""},
@@ -716,9 +703,12 @@ const FeatureEntry kFeatureEntries[] = {
     {"disable-webrtc-hw-decoding", IDS_FLAGS_WEBRTC_HW_DECODING_NAME,
      IDS_FLAGS_WEBRTC_HW_DECODING_DESCRIPTION, kOsAndroid | kOsCrOS,
      SINGLE_DISABLE_VALUE_TYPE(switches::kDisableWebRtcHWDecoding)},
-    {"disable-webrtc-hw-encoding", IDS_FLAGS_WEBRTC_HW_ENCODING_NAME,
-     IDS_FLAGS_WEBRTC_HW_ENCODING_DESCRIPTION, kOsAndroid | kOsCrOS,
-     MULTI_VALUE_TYPE(kDisableWebRtcHWEncodingChoices)},
+    {"disable-webrtc-hw-vp8-encoding", IDS_FLAGS_WEBRTC_HW_VP8_ENCODING_NAME,
+     IDS_FLAGS_WEBRTC_HW_VP8_ENCODING_DESCRIPTION, kOsAndroid | kOsCrOS,
+     SINGLE_DISABLE_VALUE_TYPE(switches::kDisableWebRtcHWVP8Encoding)},
+    {"enable-webrtc-hw-h264-encoding", IDS_FLAGS_WEBRTC_HW_H264_ENCODING_NAME,
+     IDS_FLAGS_WEBRTC_HW_H264_ENCODING_DESCRIPTION, kOsAndroid | kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kWebRtcHWH264Encoding)},
     {"enable-webrtc-stun-origin", IDS_FLAGS_WEBRTC_STUN_ORIGIN_NAME,
      IDS_FLAGS_WEBRTC_STUN_ORIGIN_DESCRIPTION, kOsAll,
      SINGLE_VALUE_TYPE(switches::kEnableWebRtcStunOrigin)},
@@ -1942,9 +1932,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-native-cups", IDS_FLAGS_ENABLE_NATIVE_CUPS_NAME,
      IDS_FLAGS_ENABLE_NATIVE_CUPS_DESCRIPTION, kOsCrOS,
      SINGLE_VALUE_TYPE(switches::kEnableNativeCups)},
-    {"enable-files-details-panel", IDS_FLAGS_ENABLE_FILES_DETAILS_PANEL_NAME,
-     IDS_FLAGS_ENABLE_FILES_DETAILS_PANEL_DESCRIPTION, kOsCrOS,
-     SINGLE_VALUE_TYPE(chromeos::switches::kEnableFilesDetailsPanel)},
 #endif  // OS_CHROMEOS
 #if !defined(OS_ANDROID) && !defined(OS_IOS) && defined(GOOGLE_CHROME_BUILD)
     {"enable-google-branded-context-menu",
@@ -2131,19 +2118,16 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_VIDEO_FULLSCREEN_ORIENTATION_LOCK_DESCRIPTION, kOsAndroid,
      FEATURE_VALUE_TYPE(media::kVideoFullscreenOrientationLock)},
 #endif
-#if defined(OS_CHROMEOS)
-    {"cros-comp-updates", IDS_FLAGS_CROS_COMP_UPDATES_NAME,
-     IDS_FLAGS_CROS_COMP_UPDATES_DESCRIPTION, kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kCrosCompUpdates)},
-    {"component-flash-only", IDS_FLAGS_COMPONENT_FLASH_ONLY_NAME,
-     IDS_FLAGS_COMPONENT_FLASH_ONLY_DESCRIPTION, kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kComponentFlashOnly)},
-#endif
     {"enable-nostate-prefetch", IDS_FLAGS_NOSTATE_PREFETCH,
      IDS_FLAGS_NOSTATE_PREFETCH_DESCRIPTION, kOsAll,
      FEATURE_WITH_VARIATIONS_VALUE_TYPE(prerender::kNoStatePrefetchFeature,
                                         kNoStatePrefetchFeatureVariations,
                                         "NoStatePrefetchValidation")},
+#if defined(OS_CHROMEOS)
+    {"cros-comp-updates", IDS_FLAGS_CROS_COMP_UPDATES_NAME,
+     IDS_FLAGS_CROS_COMP_UPDATES_DESCRIPTION, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kCrosCompUpdates)},
+#endif
 
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in

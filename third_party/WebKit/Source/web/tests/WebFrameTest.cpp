@@ -1001,7 +1001,7 @@ TEST_P(ParameterizedWebFrameTest, PostMessageThenDetach) {
   NonThrowableExceptionState exceptionState;
   MessagePortArray messagePorts;
   frame->domWindow()->postMessage(SerializedScriptValue::serialize("message"),
-                                  messagePorts, "*", frame->localDOMWindow(),
+                                  messagePorts, "*", frame->domWindow(),
                                   exceptionState);
   webViewHelper.reset();
   EXPECT_FALSE(exceptionState.hadException());
@@ -7695,7 +7695,7 @@ TEST_P(ParameterizedWebFrameTest, FullscreenLayerSize) {
   Document* document = webViewImpl->mainFrameImpl()->frame()->document();
   UserGestureIndicator gesture(DocumentUserGestureToken::create(document));
   Element* divFullscreen = document->getElementById("div1");
-  Fullscreen::requestFullscreen(*divFullscreen, Fullscreen::PrefixedRequest);
+  Fullscreen::requestFullscreen(*divFullscreen);
   EXPECT_EQ(nullptr, Fullscreen::currentFullScreenElementFrom(*document));
   EXPECT_EQ(divFullscreen, Fullscreen::fullscreenElementFrom(*document));
   webViewImpl->didEnterFullscreen();
@@ -7735,7 +7735,7 @@ TEST_F(WebFrameTest, FullscreenLayerNonScrollable) {
   Document* document = webViewImpl->mainFrameImpl()->frame()->document();
   UserGestureIndicator gesture(DocumentUserGestureToken::create(document));
   Element* divFullscreen = document->getElementById("div1");
-  Fullscreen::requestFullscreen(*divFullscreen, Fullscreen::PrefixedRequest);
+  Fullscreen::requestFullscreen(*divFullscreen);
   EXPECT_EQ(nullptr, Fullscreen::currentFullScreenElementFrom(*document));
   EXPECT_EQ(divFullscreen, Fullscreen::fullscreenElementFrom(*document));
   webViewImpl->didEnterFullscreen();
@@ -7788,8 +7788,7 @@ TEST_P(ParameterizedWebFrameTest, FullscreenMainFrame) {
 
   Document* document = webViewImpl->mainFrameImpl()->frame()->document();
   UserGestureIndicator gesture(DocumentUserGestureToken::create(document));
-  Fullscreen::requestFullscreen(*document->documentElement(),
-                                Fullscreen::PrefixedRequest);
+  Fullscreen::requestFullscreen(*document->documentElement());
   EXPECT_EQ(nullptr, Fullscreen::currentFullScreenElementFrom(*document));
   EXPECT_EQ(document->documentElement(),
             Fullscreen::fullscreenElementFrom(*document));
@@ -7840,7 +7839,7 @@ TEST_P(ParameterizedWebFrameTest, FullscreenSubframe) {
           ->document();
   UserGestureIndicator gesture(DocumentUserGestureToken::create(document));
   Element* divFullscreen = document->getElementById("div1");
-  Fullscreen::requestFullscreen(*divFullscreen, Fullscreen::PrefixedRequest);
+  Fullscreen::requestFullscreen(*divFullscreen);
   webViewImpl->didEnterFullscreen();
   webViewImpl->updateAllLifecyclePhases();
 
@@ -7880,14 +7879,14 @@ TEST_P(ParameterizedWebFrameTest, FullscreenNestedExit) {
 
   {
     UserGestureIndicator gesture(DocumentUserGestureToken::create(topDoc));
-    Fullscreen::requestFullscreen(*topBody, Fullscreen::PrefixedRequest);
+    Fullscreen::requestFullscreen(*topBody);
   }
   webViewImpl->didEnterFullscreen();
   webViewImpl->updateAllLifecyclePhases();
 
   {
     UserGestureIndicator gesture(DocumentUserGestureToken::create(iframeDoc));
-    Fullscreen::requestFullscreen(*iframeBody, Fullscreen::PrefixedRequest);
+    Fullscreen::requestFullscreen(*iframeBody);
   }
   webViewImpl->didEnterFullscreen();
   webViewImpl->updateAllLifecyclePhases();
@@ -7933,8 +7932,7 @@ TEST_P(ParameterizedWebFrameTest, FullscreenWithTinyViewport) {
 
   Document* document = webViewImpl->mainFrameImpl()->frame()->document();
   UserGestureIndicator gesture(DocumentUserGestureToken::create(document));
-  Fullscreen::requestFullscreen(*document->documentElement(),
-                                Fullscreen::PrefixedRequest);
+  Fullscreen::requestFullscreen(*document->documentElement());
   webViewImpl->didEnterFullscreen();
   webViewImpl->updateAllLifecyclePhases();
   EXPECT_EQ(384, layoutViewItem.logicalWidth().floor());
@@ -7970,8 +7968,7 @@ TEST_P(ParameterizedWebFrameTest, FullscreenResizeWithTinyViewport) {
       webViewHelper.webView()->mainFrameImpl()->frameView()->layoutViewItem();
   Document* document = webViewImpl->mainFrameImpl()->frame()->document();
   UserGestureIndicator gesture(DocumentUserGestureToken::create(document));
-  Fullscreen::requestFullscreen(*document->documentElement(),
-                                Fullscreen::PrefixedRequest);
+  Fullscreen::requestFullscreen(*document->documentElement());
   webViewImpl->didEnterFullscreen();
   webViewImpl->updateAllLifecyclePhases();
   EXPECT_EQ(384, layoutViewItem.logicalWidth().floor());
@@ -8032,8 +8029,7 @@ TEST_P(ParameterizedWebFrameTest, FullscreenRestoreScaleFactorUponExiting) {
   {
     Document* document = webViewImpl->mainFrameImpl()->frame()->document();
     UserGestureIndicator gesture(DocumentUserGestureToken::create(document));
-    Fullscreen::requestFullscreen(*document->body(),
-                                  Fullscreen::PrefixedRequest);
+    Fullscreen::requestFullscreen(*document->body());
   }
 
   webViewImpl->didEnterFullscreen();
@@ -8094,8 +8090,7 @@ TEST_P(ParameterizedWebFrameTest, ClearFullscreenConstraintsOnNavigation) {
   Document* document = webViewImpl->mainFrameImpl()->frame()->document();
   UserGestureIndicator gesture(
       DocumentUserGestureToken::create(document, UserGestureToken::NewGesture));
-  Fullscreen::requestFullscreen(*document->documentElement(),
-                                Fullscreen::PrefixedRequest);
+  Fullscreen::requestFullscreen(*document->documentElement());
   webViewImpl->didEnterFullscreen();
   webViewImpl->updateAllLifecyclePhases();
 
@@ -8164,7 +8159,7 @@ TEST_P(ParameterizedWebFrameTest, OverlayFullscreenVideo) {
   EXPECT_FALSE(video->isFullscreen());
   EXPECT_FALSE(layerTreeView.hasTransparentBackground);
 
-  video->enterFullscreen();
+  video->webkitEnterFullscreen();
   webViewImpl->didEnterFullscreen();
   webViewImpl->updateAllLifecyclePhases();
   EXPECT_TRUE(video->isFullscreen());
@@ -9149,7 +9144,7 @@ TEST_F(WebFrameSwapTest, WindowOpenOnRemoteFrame) {
   ASSERT_TRUE(mainFrame()->isWebLocalFrame());
   ASSERT_TRUE(mainFrame()->firstChild()->isWebRemoteFrame());
   LocalDOMWindow* mainWindow =
-      toWebLocalFrameImpl(mainFrame())->frame()->localDOMWindow();
+      toWebLocalFrameImpl(mainFrame())->frame()->domWindow();
 
   KURL destination = toKURL("data:text/html:destination");
   mainWindow->open(destination.getString(), "frame1", "", mainWindow,
@@ -10060,7 +10055,7 @@ TEST_F(WebFrameTest, ImageDocumentLoadFinishTime) {
   EXPECT_TRUE(document->isImageDocument());
 
   ImageDocument* imgDocument = toImageDocument(document);
-  ImageResource* resource = imgDocument->cachedImage();
+  ImageResource* resource = imgDocument->cachedImageResourceDeprecated();
 
   EXPECT_TRUE(resource);
   EXPECT_NE(0, resource->loadFinishTime());
