@@ -1,7 +1,0 @@
-include_rules = [
-  "+components/cryptauth",
-  "+components/proximity_auth/logging",
-  "+device/bluetooth",
-  "+ui/gfx",
-  "+ui/message_center",
-]

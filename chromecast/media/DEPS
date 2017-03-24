@@ -1,7 +1,0 @@
-include_rules = [
-  "+crypto",
-  "+media/audio",
-  "+media/base",
-  "+media/cdm",
-  "+ui/gfx/geometry",
-]

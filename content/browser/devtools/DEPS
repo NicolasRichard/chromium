@@ -1,4 +1,0 @@
-include_rules = [
-  # V8 version info
-  "+v8/include/v8-version-string.h",
-]

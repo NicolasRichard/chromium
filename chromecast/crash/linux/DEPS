@@ -1,5 +1,0 @@
-include_rules = [
-  "+chromecast/system",
-  "+components/metrics",
-  "+components/prefs",
-]

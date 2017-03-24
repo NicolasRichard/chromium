@@ -1,5 +1,0 @@
-include_rules = [
-  "-components/policy/core/browser",
-  "+components/data_use_measurement/core",
-  "+extensions/features",
-]

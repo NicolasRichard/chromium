@@ -1,4 +1,0 @@
-include_rules = [
-  "+cc",
-  "+gpu/command_buffer/client",
-]

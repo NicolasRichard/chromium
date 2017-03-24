@@ -1,3 +1,0 @@
-per-file js2gtest.*=dtseng@chromium.org
-
-per-file *tracing*=file://base/trace_event/OWNERS

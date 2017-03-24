@@ -1,7 +1,0 @@
-include_rules = [
-  "-components/payments/content/android",
-  "+components/autofill",
-  "+content/public",
-  "+mojo/public/cpp",
-  "+third_party/re2",
-]
